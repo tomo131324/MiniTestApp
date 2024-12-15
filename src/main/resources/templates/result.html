@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OCR結果</title>
+</head>
+<body>
+	<form action="/create" method="post">
+  		<h3>OCR結果</h3>
+  		<p><textarea cols="30" rows="10" th:text="${text}" name="textinput" style="font-size: 20px; width:100%; height: 500px;"></textarea></p>
+  	
+		<div>
+			<p>問題数</p>
+    		<select name="number">
+      		<option value="1">1</option>
+      		<option value="2">2</option>
+      		<option value="3">3</option>
+      		<option value="4">4</option>
+      		<option value="5">5</option>
+      		<option value="6">6</option>
+      		<option value="7">7</option>
+      		<option value="8">8</option>
+      		<option value="9">9</option>
+      		<option value="10">10</option>
+    		</select>
+    	</div>
+    	
+    	<div>
+			<p>問題形式</p>
+    		<label><input type="radio" value="記述問題" name="form" />記述問題</label>
+    		<label><input type="radio" value="4択問題" name="form"checked />4択問題</label>
+    		<label><input type="radio" value="穴埋め問題" name="form" />穴埋め問題</label>
+    	</div>
+    	
+    	<div>
+      		<input type="submit" value="送信" />
+    	</div>
+    </form>
+    
+	<a th:href="@{/}">戻る</a>
+</body>
+</html>

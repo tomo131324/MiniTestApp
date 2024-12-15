@@ -1,0 +1,30 @@
+body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  line-height: 1.6;
+}
+
+.camera-section, .image-container, .result-container {
+  margin-bottom: 20px;
+}
+
+.camera video {
+  display: block;
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  margin-bottom: 10px;
+}
+
+.image-container img, .result-container img {
+  max-width: 500px;
+  height: auto;
+  display: block;
+}
+
+button {
+  padding: 10px 15px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 10px;
+}
