@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>画像トリミング</title>
+  
+  <!-- Cropper.js CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+	<header id="pageHead">
+		<div class="nav">
+			<a th:href="@{/result}">テキスト入力</a>
+			<a th:href="@{/guide}">利用ガイド</a>
+			<a th:href="@{/favorite}">お気に入り</a>
+			<a th:href="@{/register}">新規登録</a>
+			<!-- ログインしていない場合に表示 -->
+			<a th:href="@{/login}" sec:authorize="isAnonymous()">ログイン</a>
+			<!-- ログインしている場合に表示 -->
+			<form th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()">
+				<input type="submit" value="ログアウト">
+			</form>
+		</div>
+	</header>
+	
+  <h3>画像のアップロードまたはカメラで撮影</h3>
+  
+  <!-- 画像ファイルのアップロード -->
+  <form>
+    <input type="file" id="fileInput" accept="image/*">
+  </form>
+
+  <div class="camera-section">
+    <h3>カメラ画像取得</h3>
+    <div class="camera">
+      <video id="video" autoplay></video>
+      <button type="button" id="shoot">撮影</button>
+    </div>
+  </div>
+
+  <div class="image-container">
+    <h3>トリミング対象画像</h3>
+    <img id="target" alt="トリミング対象画像">
+  </div>
+
+  <!-- トリミングボタン -->
+  <button type="button" id="cropButton">トリミング</button>
+
+  <!-- トリミング結果の表示 -->
+  <div class="result-container">
+    <h3>トリミング結果</h3>
+    <img id="preview" alt="トリミング結果">
+  </div>
+
+  <!-- 生成ボタン（OCR実行） -->
+    <form id="ocrForm" action="/ocr" method="POST">
+    	<input type="hidden" id="imageData" name="image">
+    	<button type="submit" id="generateButton">OCRを実行</button>
+ 	</form>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+  <script src="js/index.js"></script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<form action="/scoring" method="post">
+	<div th:object="${questions}">
+		
+    	<div th:if="*{question1 != null}">
+        	問題1: <span th:text="*{question1}"></span>
+        	<div th:each="choice : *{choices1}">
+            	<input name="answer1" type="radio" th:value="${choice}"/>
+    			<span th:text="${choice}"></span>
+        	</div>
+    	</div>
+		
+		<div th:if="*{question2 != null}">
+        	問題2: <span th:text="*{question2}"></span>
+        	<div th:each="choice : *{choices2}">
+            	<input name="answer2" type="radio" th:value="${choice}"/>
+    			<span th:text="${choice}"></span>
+    		</div>
+    	</div>
+    	
+    	<div th:if="*{question3 != null}">
+        	問題3: <span th:text="*{question3}"></span>
+        	<div th:each="choice : *{choices3}">
+            	<input name="answer3" type="radio" th:value="${choice}"/>
+    			<span th:text="${choice}"></span>
+        	</div>
+    	</div>
+    	
+    	<div th:if="*{question4 != null}">
+        	問題4: <span th:text="*{question4}"></span>
+        	<div th:each="choice : *{choices4}">
+            	<input name="answer4" type="radio" th:value="${choice}"/>
+    			<span th:text="${choice}"></span>
+        	</div>
+    	</div>
+    	
+    	<div th:if="*{question5 != null}">
+        	問題5: <span th:text="*{question5}"></span>
+        	<div th:each="choice : *{choices5}">
+            	<input name="answer5" type="radio" th:value="${choice}"/>
+    			<span th:text="${choice}"></span>
+        	</div>
+    	</div>
+    	
+    	<div th:if="*{question6 != null}">
+        	問題6: <span th:text="*{question6}"></span>
+        	<div th:each="choice : *{choices6}">
+            	<input name="answer6" type="radio" th:value="${choice}"/>
+    			<span th:text="${choice}"></span>
+        	</div>
+    	</div>
+    	
+    	<div th:if="*{question7 != null}">
+        	問題7: <span th:text="*{question7}"></span>
+        	<div th:each="choice : *{choices7}">
+            	<input name="answer7" type="radio" th:value="${choice}"/>
+    			<span th:text="${choice}"></span>
+        	</div>
+    	</div>
+    	
+    	<div th:if="*{question8 != null}">
+        	問題8: <span th:text="*{question8}"></span>
+        	<div th:each="choice : *{choices8}">
+            	<input name="answer8" type="radio" th:value="${choice}"/>
+    			<span th:text="${choice}"></span>
+        	</div>
+    	</div>
+    	
+    	<div th:if="*{question9 != null}">
+        	問題9: <span th:text="*{question9}"></span>
+        	<div th:each="choice : *{choices9}">
+            	<input name="answer9" type="radio" th:value="${choice}"/>
+    			<span th:text="${choice}"></span>
+        	</div>
+    	</div>
+    	
+    	<div th:if="*{question10 != null}">
+        	問題10: <span th:text="*{question10}"></span>
+        	<div th:each="choice : *{choices10}">
+            	<input name="answer10" type="radio" th:value="${choice}"/>
+    			<span th:text="${choice}"></span>
+        	</div>
+    	</div>
+	</div>
+	<input type="submit" value="送信">
+	</form>
+</body>
+</html>

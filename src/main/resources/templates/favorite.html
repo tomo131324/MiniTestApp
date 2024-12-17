@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>お気に入り</title>
+    <link rel="stylesheet" href="css/favorite.css">
+</head>
+<body>
+    <div class="container">    
+        <!-- ポップアップを開くボタン -->
+        <button id="openPopupButton">+小テストを作成</button>
+        
+        <!-- ポップアップ -->
+        <div id="popup" class="hidden">
+            <div class="popup-content">
+                <span id="closePopupButton" class="close-button">&times;</span>
+                <form action="/createTest" method="post" id="TestName">
+                	<input type="text" name="miniTestName" placeholder="テスト名を入力してください">
+                	<button type="submit">決定</button>
+                </form>
+            </div>
+        </div>    
+
+        <!-- メイン内容 -->
+        <h1>お気に入り機能</h1>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>問題形式</th>
+                        <th>問題</th>
+                        <th>作成時間</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="questions : ${questions}" >
+                        <td th:text="${questions.question_type}"></td>
+                        <td th:text="${questions.question}" th:onclick="location.href='/detail' + '/' + [[${questions.question_id}]]"></td>
+                        <td th:text="${questions.created_at}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script src="js/favorite.js"></script>
+</body>
+</html>
