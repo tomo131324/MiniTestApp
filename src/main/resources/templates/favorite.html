@@ -35,7 +35,7 @@
                 <tbody>
                     <tr th:each="questions : ${questions}" >
                         <td th:text="${questions.question_type}"></td>
-                        <td th:text="${questions.question}" th:onclick="location.href='/detail' + '/' + [[${questions.question_id}]]"></td>
+                        <td th:text="${questions.question}" th:onclick="location.href='/detail' + '/' + [[${questions.questionId}]]"></td>
                         <td th:text="${questions.created_at}"></td>
                     </tr>
                 </tbody>

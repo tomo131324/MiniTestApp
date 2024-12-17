@@ -243,9 +243,13 @@ public class MainController {
     //問題詳細画面
     @GetMapping("/detail/{id}")
     public String getDetail(@PathVariable("id") Integer id, Model model) {
-    	Optional<Question> question = questionService.findByQuestionId(id);
-    	model.addAttribute("question", question);
-    	return "detail";
+    	Optional<Question> questionOptional = questionService.findByQuestionId(id);
+    	if (questionOptional.isPresent()) {
+            model.addAttribute("questions", questionOptional.get());
+            return "detail";
+        } else {
+            return "redirect:/favorite";
+        }
     }
 }
 

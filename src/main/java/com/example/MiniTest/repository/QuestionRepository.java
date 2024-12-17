@@ -8,5 +8,5 @@ import com.example.MiniTest.entity.Question;
 
 
 public interface QuestionRepository extends CrudRepository<Question, Integer>{
-	 Optional<Question> findByQuestionId(Integer question_id);
+	 Optional<Question> findByQuestionId(Integer questionId);
 }

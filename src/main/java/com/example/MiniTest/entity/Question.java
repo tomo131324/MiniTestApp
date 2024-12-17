@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,7 +16,8 @@ import lombok.NoArgsConstructor;
 public class Question {
 
 	@Id
-	private Integer question_id;
+	@Column(value = "question_id") 
+    private Integer questionId;
 	
 	private Integer user_id;
 	

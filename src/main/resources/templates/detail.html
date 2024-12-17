@@ -5,17 +5,14 @@
 <title>問題詳細</title>
 </head>
 <body>
-	<div th:object="${question}">
-    	<div th:text="*{question}"></div>
-
-		<div th:text="*{create_at}"></div>
-
+		<div th:text="${questions.question}"></div>
+		
+		<div th:text="${questions.created_at}"></div>
     	<button>問題を解く</button>
 
     	<button>前の問題</button>
     	<button>次の問題</button>
     
     	<a th:href="@{/favorite}">Myページ</a>
-	</div>
 </body>
 </html>
