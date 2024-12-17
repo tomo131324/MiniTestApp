@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -18,6 +19,7 @@ import com.example.MiniTest.entity.User;
 import com.example.MiniTest.form.MainForm;
 import com.example.MiniTest.form.RegisterForm;
 import com.example.MiniTest.service.ApiService;
+import com.example.MiniTest.service.QuestionService;
 import com.example.MiniTest.service.SaveService;
 import com.example.MiniTest.service.UserService;
 
@@ -33,6 +35,7 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.validation.BindingResult;
 
 @Controller
@@ -46,6 +49,8 @@ public class MainController {
     private UserService userService;
     @Autowired
     private SaveService saveService;
+    @Autowired
+    private QuestionService questionService;
 
     private File tempFile;
     
@@ -100,7 +105,7 @@ public class MainController {
     //お気に入り
     @GetMapping("/favorite")
     public String favorite(Model model) {
-    	model.addAttribute("questions" );
+    	model.addAttribute("questions", questionService.selectAll());
         return "favorite";
     }
     
@@ -229,6 +234,19 @@ public class MainController {
 
     }
     
+    //小テスト名作成
+    @PostMapping("/createTest")
+    public String creatrTest(@RequestParam("TestName") String name) {
+    	return "redirect:/favorite";
+    }
+    
+    //問題詳細画面
+    @GetMapping("/detail/{id}")
+    public String getDetail(@PathVariable("id") Integer id, Model model) {
+    	Optional<Question> question = questionService.findByQuestionId(id);
+    	model.addAttribute("question", question);
+    	return "detail";
+    }
 }
 
 
