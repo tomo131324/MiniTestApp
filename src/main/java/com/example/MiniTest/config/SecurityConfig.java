@@ -23,6 +23,8 @@ public class SecurityConfig {
             .ignoringRequestMatchers("/create")
             .ignoringRequestMatchers("/scoring")
             .ignoringRequestMatchers("/insert")
+            .ignoringRequestMatchers("/createMiniTest")
+            .ignoringRequestMatchers("/updateMiniTest")
         )
         .formLogin(login -> login
             .loginPage("/login")

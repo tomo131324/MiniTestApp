@@ -19,9 +19,11 @@ public class Question {
 	@Column(value = "question_id") 
     private Integer questionId;
 	
-	private Integer user_id;
+	@Column(value = "user_id")
+	private Integer userId;
 	
-	private String question_type;
+	@Column(value = "test_id")
+	private Integer testId;
 	
 	private String question;
 	
@@ -29,6 +31,10 @@ public class Question {
 	
 	private List<String> choices;
 	
-	private Instant created_at;
+	@Column(value = "question_type")
+	private String questionType;
+	
+	@Column(value = "created_at")
+	private Instant createdAt;
 	
 }

@@ -2,6 +2,8 @@ body {
   font-family: Arial, sans-serif;
   padding: 20px;
   line-height: 1.6;
+  background-color: #1E1F20;
+  color: white;
 }
 
 .camera-section, .image-container, .result-container {

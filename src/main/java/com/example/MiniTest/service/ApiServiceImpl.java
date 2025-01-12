@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.MiniTest.entity.API;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.vision.v1.AnnotateImageRequest;
 import com.google.cloud.vision.v1.AnnotateImageResponse;
@@ -67,7 +68,7 @@ public class ApiServiceImpl implements ApiService {
 	
 	//OpenAIを使い問題を作成するメソッド（記述問題）
 	@Override
-	public API descriptionQuestion(String textinput, int number){
+	public List<API> descriptionQuestion(String textinput, int number){
 		try {
 			// OpenAI APIキー（環境変数から取得）
 			String apiKey = System.getenv("OPENAI_API_KEY");
@@ -88,12 +89,12 @@ public class ApiServiceImpl implements ApiService {
 			userMessage.addProperty("content",
           	    "以下のテキストを基に、記述問題を" + number + "問作成してください。生成結果をJSON形式で出力してください。出力フォーマットは以下のようにしてください。\n\n" +
           	    "{\n" +
-          	    "	\"Question1\": \"問題文1\",\n" +
-          	    "   \"Answer1\": \"正解1\",\n" +
+          	    "	\"Question\": \"問題文\",\n" +
+          	    "   \"Answer\": \"正解\",\n" +
           	    ",\n" +
           	    "\n" +
-          	    " 	\"Question2\": \"問題文2\",\n" +
-          	    "   \"Answer2\": \"正解2\",\n" +
+          	    " 	\"Question\": \"問題文\",\n" +
+          	    "   \"Answer\": \"正解\",\n" +
           	    ",\n" +
           	    "\n\n" +
           	    "以下のテキストを使用してください：\n==\n" + textinput
@@ -136,9 +137,9 @@ public class ApiServiceImpl implements ApiService {
                       .getAsString();
               
 				// contentをJSON配列としてパース
-		        ObjectMapper objectMapper = new ObjectMapper();
-	            return objectMapper.readValue(content, API.class);
-
+	            ObjectMapper objectMapper = new ObjectMapper();
+	            // 複数問題をリストとしてデシリアライズ
+	            return objectMapper.readValue(content, objectMapper.getTypeFactory().constructCollectionType(List.class, API.class));
 			} else {
 	            throw new IOException("APIからエラーが返されました: " + connection.getResponseCode());
 	        }
@@ -150,92 +151,100 @@ public class ApiServiceImpl implements ApiService {
 
 	//OpenAIを使い問題を作成するメソッド（4択問題）
 	@Override
-	public API choiceQuestion(String textinput, int number){
-		try {
-			// OpenAI APIキー（環境変数から取得）
-			String apiKey = System.getenv("OPENAI_API_KEY");
-			if (apiKey == null || apiKey.isEmpty()) {
-				throw new IllegalStateException("APIキーが設定されていません。環境変数 'OPENAI_API_KEY' を設定してください。");
-			}
+	public List<API> choiceQuestion(String textinput, int number) {
+	    try {
+	        // OpenAI APIキー（環境変数から取得）
+	        String apiKey = System.getenv("OPENAI_API_KEY");
+	        if (apiKey == null || apiKey.isEmpty()) {
+	        	throw new IllegalStateException("APIキーが設定されていません。環境変数 'OPENAI_API_KEY' を設定してください。");
+	        }
 
-			// APIエンドポイント
-			String endpoint = "https://api.openai.com/v1/chat/completions";
+	        // APIエンドポイント
+	        String endpoint = "https://api.openai.com/v1/chat/completions";
 
-			// リクエストペイロードの作成
-			JsonObject systemMessage = new JsonObject();
-			systemMessage.addProperty("role", "system");
-			systemMessage.addProperty("content", "あなたは問題を作るAIです。JSONで結果を出力します。");
+	        // リクエストペイロードの作成
+	        JsonObject systemMessage = new JsonObject();
+	        systemMessage.addProperty("role", "system");
+	        systemMessage.addProperty("content", "あなたは問題を作るAIです。JSONで結果を出力します。");
 
-			JsonObject userMessage = new JsonObject();
-			userMessage.addProperty("role", "user");
-			userMessage.addProperty("content",
-          	    "以下のテキストを基に、4択問題を" + number + "問作成してください。生成結果をJSON形式で出力してください。出力フォーマットは以下のようにしてください。\n\n" +
-          	    "{\n" +
-          	    "	\"Question1\": \"問題文1\",\n" +
-          	    "   \"Answer1\": \"正解1\",\n" +
-          	    "	\"Choices1\": [\"選択肢1-1\", \"選択肢1-2\", \"選択肢1-3\", \"選択肢1-4\"]\n" +
-          	    ",\n" +
-          	    "\n" +
-          	    " 	\"Question2\": \"問題文2\",\n" +
-          	    "   \"Answer2\": \"正解2\",\n" +
-          	    "   \"Choices2\": [\"選択肢2-1\", \"選択肢2-2\", \"選択肢2-3\", \"選択肢2-4\"]\n" +
-          	    ",\n" +
-          	    "\n\n" +
-          	    "以下のテキストを使用してください：\n==\n" + textinput
-          	);
+	        JsonObject userMessage = new JsonObject();
+	        userMessage.addProperty("role", "user");
+	        userMessage.addProperty("content",
+	            "以下のテキストを基に、4択問題を" + number + "問作成してください。生成結果をJSON形式で出力してください。出力フォーマットは以下のようにしてください。\n\n" +
+	            "{\n" +
+	            "  \"questions\": [\n" +
+	            "    {\n" +
+	            "      \"Question\": \"問題文\",\n" +
+	            "      \"Answer\": \"正解\",\n" +
+	            "      \"Choices\": [\"選択肢1\", \"選択肢2\", \"選択肢3\", \"選択肢4\"]\n" +
+	            "    }\n" +
+	            "  ]\n" +
+	            "}\n\n" +
+	            "以下のテキストを使用してください：\n==\n" + textinput
+	        );
 
-			JsonArray messages = new JsonArray();
-			messages.add(systemMessage);
-			messages.add(userMessage);
+	        JsonArray messages = new JsonArray();
+	        messages.add(systemMessage);
+	        messages.add(userMessage);
 
-			JsonObject payload = new JsonObject();
-			payload.addProperty("model", "gpt-4");
-			payload.add("messages", messages);
+	        JsonObject payload = new JsonObject();
+	        payload.addProperty("model", "gpt-4");
+	        payload.add("messages", messages);
 
-			// HTTPリクエストの設定
-			URL url = new URL(endpoint);
-			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-			connection.setRequestMethod("POST");
-			connection.setRequestProperty("Authorization", "Bearer " + apiKey);
-			connection.setRequestProperty("Content-Type", "application/json");
-			connection.setDoOutput(true);
+	        // HTTPリクエストの設定
+	        URL url = new URL(endpoint);
+	        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+	        connection.setRequestMethod("POST");
+	        connection.setRequestProperty("Authorization", "Bearer " + apiKey);
+	        connection.setRequestProperty("Content-Type", "application/json");
+	        connection.setDoOutput(true);
 
-			// リクエストボディを送信
-			try (OutputStream os = connection.getOutputStream()) {
-				byte[] input = payload.toString().getBytes(StandardCharsets.UTF_8);
-				os.write(input, 0, input.length);
-			}
+	        // リクエストボディを送信
+	        try (OutputStream os = connection.getOutputStream()) {
+	            byte[] input = payload.toString().getBytes(StandardCharsets.UTF_8);
+	            os.write(input, 0, input.length);
+	        }
 
-			// レスポンスを取得
-			if (connection.getResponseCode() == 200) {
-				String jsonResponse = new String(connection.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+	        // レスポンスを取得
+	        int responseCode = connection.getResponseCode();
+	        if (responseCode == 200) {
+	            String jsonResponse = new String(connection.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
 
-				// JSONを解析してcontentを取得
-				JsonObject jsonObject = JsonParser.parseString(jsonResponse).getAsJsonObject();
-				String content = jsonObject
-                      .getAsJsonArray("choices")
-                      .get(0)
-                      .getAsJsonObject()
-                      .getAsJsonObject("message")
-                      .get("content")
-                      .getAsString();
-              
-				// contentをJSON配列としてパース
-		        ObjectMapper objectMapper = new ObjectMapper();
-	            return objectMapper.readValue(content, API.class);
+	            // JSONを解析してcontentを取得
+	            JsonObject jsonObject = JsonParser.parseString(jsonResponse).getAsJsonObject();
+	            String content = jsonObject
+	                .getAsJsonArray("choices")
+	                .get(0)
+	                .getAsJsonObject()
+	                .getAsJsonObject("message")
+	                .get("content")
+	                .getAsString();
 
-			} else {
-	            throw new IOException("APIからエラーが返されました: " + connection.getResponseCode());
+	            // contentをJSONとしてパース
+	            ObjectMapper objectMapper = new ObjectMapper();
+	            JsonNode rootNode = objectMapper.readTree(content);
+
+	            // "questions"配列をリストに変換
+	            List<API> apiList = objectMapper.convertValue(
+	                rootNode.get("questions"),
+	                objectMapper.getTypeFactory().constructCollectionType(List.class, API.class)
+	            );
+
+	            return apiList;
+	        } else {
+	            String errorResponse = new String(connection.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
+	            throw new IOException("APIからエラーが返されました: " + responseCode + " - " + errorResponse);
 	        }
 	    } catch (Exception e) {
 	        e.printStackTrace();
-	        throw new RuntimeException("エラーが発生しました: " + e.getMessage());
+	        throw new RuntimeException("エラーが発生しました: " + e.getMessage(), e);
 	    }
 	}
 
+
 	//OpenAIを使い問題を作成するメソッド（穴埋め問題）
 	@Override
-	public API holeQuestion(String textinput, int number){
+	public List<API> holeQuestion(String textinput, int number){
 		try {
 			// OpenAI APIキー（環境変数から取得）
 			String apiKey = System.getenv("OPENAI_API_KEY");
@@ -256,12 +265,12 @@ public class ApiServiceImpl implements ApiService {
 			userMessage.addProperty("content",
           	    "以下のテキストを基に、穴埋め問題を" + number + "問作成してください。生成結果をJSON形式で出力してください。出力フォーマットは以下のようにしてください。\n\n" +
           	    "{\n" +
-          	    "	\"Question1\": \"問題文1\",\n" +
-          	    "   \"Answer1\": \"正解1\",\n" +
+          	    "	\"Question\": \"問題文\",\n" +
+          	    "   \"Answer\": \"正解\",\n" +
           	    ",\n" +
           	    "\n" +
-          	    " 	\"Question2\": \"問題文2\",\n" +
-          	    "   \"Answer2\": \"正解2\",\n" +
+          	    " 	\"Question\": \"問題文\",\n" +
+          	    "   \"Answer\": \"正解\",\n" +
           	    ",\n" +
           	    "\n\n" +
           	    "以下のテキストを使用してください：\n==\n" + textinput
@@ -304,8 +313,9 @@ public class ApiServiceImpl implements ApiService {
                       .getAsString();
               
 				// contentをJSON配列としてパース
-		        ObjectMapper objectMapper = new ObjectMapper();
-	            return objectMapper.readValue(content, API.class);
+	            ObjectMapper objectMapper = new ObjectMapper();
+	            // 複数問題をリストとしてデシリアライズ
+	            return objectMapper.readValue(content, objectMapper.getTypeFactory().constructCollectionType(List.class, API.class));
 
 			} else {
 	            throw new IOException("APIからエラーが返されました: " + connection.getResponseCode());

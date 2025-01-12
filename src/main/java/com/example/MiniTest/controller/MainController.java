@@ -44,7 +44,7 @@ import org.springframework.validation.BindingResult;
 public class MainController {
 
     @Autowired
-    private ApiService service;
+    private ApiService apiservice;
     @Autowired
     private UserService userService;
     @Autowired
@@ -55,7 +55,7 @@ public class MainController {
     private File tempFile;
     
     private String questionType;
-
+	
     // 初期画面
     @GetMapping
     public String showCameraPage() {
@@ -105,7 +105,6 @@ public class MainController {
     //お気に入り
     @GetMapping("/favorite")
     public String favorite(Model model) {
-    	model.addAttribute("questions", questionService.selectAll());
         return "favorite";
     }
     
@@ -121,7 +120,7 @@ public class MainController {
             Files.write(tempFile.toPath(), imageBytes);
 
             // OCR実行
-            String text = service.extractText(tempFile);
+            String text = apiservice.extractText(tempFile);
 
             // セッションにOCR結果を保存
             session.setAttribute("ocrResult", text);
@@ -150,23 +149,23 @@ public class MainController {
     //問題作成
     @PostMapping("/create")
     public String create(@RequestParam("number") int number, @RequestParam("form") String form, @RequestParam("textinput") String textinput,HttpSession session, Model model){
-        
+    	Integer userId = questionService.getCurrentUserId();
+    	Integer latestTestId = questionService.getLatestTestId(userId);
+    	
     	switch (form) {
         case "記述問題":
-        	API descriptionQuestions = service.descriptionQuestion(textinput,number);
-        	session.setAttribute("questions", descriptionQuestions);
+        	List<API> descriptionQuestions = apiservice.descriptionQuestion(textinput,number);
             model.addAttribute("questions", descriptionQuestions);
             questionType = "記述問題";
             break;
         case "4択問題":
-        	API choiceQuestions = service.choiceQuestion(textinput,number);
-        	session.setAttribute("questions", choiceQuestions);
+        	List<API> choiceQuestions = apiservice.choiceQuestion(textinput,number);
             model.addAttribute("questions", choiceQuestions);
             questionType = "4択問題";
+            saveService.addQuestion(choiceQuestions,userId,questionType,latestTestId);
             break;
         case "穴埋め問題":
-        	API holeQuestions = service.holeQuestion(textinput,number);
-        	session.setAttribute("questions",holeQuestions);
+        	List<API> holeQuestions = apiservice.holeQuestion(textinput,number);
             model.addAttribute("questions", holeQuestions);
             questionType = "穴埋め問題";
             break;
@@ -175,82 +174,16 @@ public class MainController {
     	return "choiceQuestion";
     }
     
+    
     //採点
     @PostMapping("/scoring")
-    public String scoring(@RequestParam Map<String, String> userAnswers, HttpSession session, Model model) throws NoSuchMethodException, SecurityException {
-    	API questions = (API) session.getAttribute("questions"); // セッションから取得
-        if (questions == null) {
-            throw new IllegalStateException("質問データが見つかりません");
-        }
-        
-        // MainForm に変換
-        MainForm mainForm = new MainForm(
-        	userAnswers.get("answer1"),
-            userAnswers.get("answer2"),
-            userAnswers.get("answer3"),
-            userAnswers.get("answer4"),
-            userAnswers.get("answer5"),
-            userAnswers.get("answer6"),
-            userAnswers.get("answer7"),
-            userAnswers.get("answer8"),
-            userAnswers.get("answer9"),
-            userAnswers.get("answer10")
-        );
-
-        model.addAttribute("mainForm", mainForm);
-    	model.addAttribute("questions", questions);
-    	
-    	return "scoring";
+    public String scoring(@RequestParam("answers") List<String> answers, Model model) {
+    	List<String> correction = questionService.scoring(answers);
+    	model.addAttribute("correction", correction);
+    	return "/scoring";
     }
     
-    //DBに登録
-    @PostMapping("/insert")
-    public String insert(@RequestParam(value = "questionNumber", required = false) List<String> questionNumber,
-    						@RequestParam(value = "questionData") List<String> question,
-    						@RequestParam(value = "answerData") List<String> answer,
-    						@RequestParam(value = "choicesData") List<List<String>> choices) {
-    	
-    	List<Question> save = new ArrayList<>();
-    	Integer userId = saveService.getCurrentUserId();
-    	
-    	
-    	if (questionNumber != null) {
-    		for (String questionkey : questionNumber) {
-    			int Index = Integer.parseInt(questionkey.replace("question", "")) -1;
-    			Question questions = new Question();
-    			questions.setUser_id(userId);
-    			questions.setQuestion(question.get(Index));
-    			questions.setAnswer(answer.get(Index));
-    			questions.setChoices(choices.get(Index));
-    			questions.setQuestion_type(questionType);
-    			questions.setCreated_at(Instant.now());
-    			save.add(questions);
-    		}
-    	}
-    	
-    	saveService.insert(save);
-    	return "redirect:/";
-
-
-    }
-    
-    //小テスト名作成
-    @PostMapping("/createTest")
-    public String creatrTest(@RequestParam("TestName") String name) {
-    	return "redirect:/favorite";
-    }
-    
-    //問題詳細画面
-    @GetMapping("/detail/{id}")
-    public String getDetail(@PathVariable("id") Integer id, Model model) {
-    	Optional<Question> questionOptional = questionService.findByQuestionId(id);
-    	if (questionOptional.isPresent()) {
-            model.addAttribute("questions", questionOptional.get());
-            return "detail";
-        } else {
-            return "redirect:/favorite";
-        }
-    }
+   
 }
 
 
