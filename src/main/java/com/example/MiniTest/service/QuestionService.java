@@ -12,5 +12,5 @@ public interface QuestionService {
 	
 	Integer getLatestTestId(Integer userId);
 	
-	List<String> scoring(List<String> answers);
+	List<Boolean> scoring(List<String> answers);
 }

@@ -8,10 +8,10 @@
 <body>
 	<form action="/scoring" method="post">
 		
-		<div th:each="question : ${questions}">
+		<div th:each="question, questionStat : ${questions}">
     		<span th:text="${question.question}"></span><br/>
     		<div th:each="choice : ${question.choices}">
-        		<input type="radio" th:name="${question.question}" th:value="${choice}"/>
+        		<input type="radio" th:name="'answers[' + ${questionStat.index} + ']'" th:value="${choice}" />
         		<span th:text="${choice}"></span><br/>
     		</div>
 		</div>

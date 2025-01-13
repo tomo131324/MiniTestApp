@@ -30,3 +30,11 @@ button {
   cursor: pointer;
   margin-top: 10px;
 }
+
+.correct {
+    color: green;
+}
+
+.incorrect {
+    color: red;
+}

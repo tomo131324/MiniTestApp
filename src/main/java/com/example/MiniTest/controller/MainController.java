@@ -149,6 +149,7 @@ public class MainController {
     //問題作成
     @PostMapping("/create")
     public String create(@RequestParam("number") int number, @RequestParam("form") String form, @RequestParam("textinput") String textinput,HttpSession session, Model model){
+    	//ユーザーIDと最新テストID取得
     	Integer userId = questionService.getCurrentUserId();
     	Integer latestTestId = questionService.getLatestTestId(userId);
     	
@@ -177,8 +178,17 @@ public class MainController {
     
     //採点
     @PostMapping("/scoring")
-    public String scoring(@RequestParam("answers") List<String> answers, Model model) {
-    	List<String> correction = questionService.scoring(answers);
+    public String scoring(@RequestParam Map<String, String> answers, Model model) {
+    	//ユーザーIDと最新テストID取得
+    	Integer userId = questionService.getCurrentUserId();
+    	Integer latestTestId = questionService.getLatestTestId(userId);
+        // MapからListに変換
+        List<String> userAnswer = new ArrayList<>(answers.values());
+    	//正誤取得
+    	List<Boolean> correction = questionService.scoring(userAnswer);
+    	
+    	model.addAttribute("questions", questionService.getQuestions(userId, latestTestId));
+    	model.addAttribute("userAnswer", userAnswer);
     	model.addAttribute("correction", correction);
     	return "/scoring";
     }

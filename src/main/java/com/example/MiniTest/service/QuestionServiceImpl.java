@@ -52,26 +52,28 @@ public class QuestionServiceImpl implements QuestionService{
     
 	//採点
 	@Override
-	public List<String> scoring(List<String> userAnswers){
+	public List<Boolean> scoring(List<String> userAnswers){
 		Integer userId = getCurrentUserId();
 		Integer latestTestId = getLatestTestId(userId);
-		List<String> correction = new ArrayList<String>();
+		List<Boolean> correction = new ArrayList<Boolean>();
 		List<String> answers = new ArrayList<String>();
 		Iterable<Question> questions = getQuestions(userId,latestTestId);
 		
-		//correctionに正解の答えを入れる
-		for (Question question : questions) {
-			answers.add(question.getAnswer());
-		}
-		
-		//正解の答えとユーザーの答え比較
-		if (answers.equals(userAnswers)) {
-			correction.add("正解");
-		} else {
-			correction.add("不正解");
-		}
-		
-		return correction;
+		// answersに正解の答えを入れる
+	    for (Question question : questions) {
+	        answers.add(question.getAnswer());
+	    }
+	    
+	    // 正解の答えとユーザーの答えを比較
+	    for (int i = 0; i < answers.size(); i++) {
+	        if (i < userAnswers.size() && answers.get(i).equals(userAnswers.get(i))) {
+	        	correction.add(true);
+	        } else {
+	            correction.add(false);
+	        }
+	    }
+	    
+	    return correction;
 	}
 
 }

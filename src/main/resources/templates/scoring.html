@@ -3,7 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <title>採点画面</title>
+<link rel="stylesheet" href="css/index.css">
 </head>
 <body>
+	<h1>採点結果</h1>
+    	<div th:each="question, qStat : ${questions}">
+        	<span th:text="${question.question}"></span><br/>
+            <div th:each="choice : ${question.choices}">
+                <!-- 各選択肢に色を付けるクラスを付与 -->
+                <span 
+    				th:text="${choice}" 
+    				th:classappend="${userAnswer.contains(choice) ? (correction[qStat.index] ? 'correct' : 'incorrect') : ''}">
+				</span><br/>
+            </div>
+        </div>
+	<a href="/">トップページに戻る</a>
 </body>
 </html>
