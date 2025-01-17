@@ -1,44 +1,80 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OCR結果</title>
-    <link rel="stylesheet" href="css/index.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>テキスト抽出結果</title>
+    <link rel="stylesheet" href="css/result.css">
 </head>
-<body>
-	<form action="/create" method="post">
-  		<h3>OCR結果</h3>
-  		<p><textarea cols="30" rows="10" th:text="${text}" name="textinput" style="font-size: 20px; width:100%; height: 500px;"></textarea></p>
-  	
-		<div>
-			<p>問題数</p>
-    		<select name="number">
-      		<option value="1">1</option>
-      		<option value="2">2</option>
-      		<option value="3">3</option>
-      		<option value="4">4</option>
-      		<option value="5">5</option>
-      		<option value="6">6</option>
-      		<option value="7">7</option>
-      		<option value="8">8</option>
-      		<option value="9">9</option>
-      		<option value="10">10</option>
-    		</select>
-    	</div>
-    	
-    	<div>
-			<p>問題形式</p>
-    		<label><input type="radio" value="記述問題" name="form" />記述問題</label>
-    		<label><input type="radio" value="4択問題" name="form"checked />4択問題</label>
-    		<label><input type="radio" value="穴埋め問題" name="form" />穴埋め問題</label>
-    	</div>
-    	
-    	<div>
-      		<input type="submit" value="送信" />
-    	</div>
-    </form>
-    
-	<a th:href="@{/}">戻る</a>
+
+<body class="color-mode">
+    <div class="container">
+        <header>
+            <div class="logo" id="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="9" y1="3" x2="9" y2="21"></line>
+                </svg>
+                <span class="header-title">作っと小テスト</span>
+            </div>
+            <nav>
+                <ul class="auth-nav">
+                    <form th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()">
+                        <input type="submit" value="ログアウト" class="auth-button logout-button">
+                    </form>
+                </ul>
+            </nav>
+        </header>
+        <div id="sidebar">
+            <ul>
+                <li>履歴</li>
+                <li><a href="#">ホーム</a></li>
+                <li><a href="#">プロフィール</a></li>
+                <li><a href="#">設定</a></li>
+            </ul>
+        </div>
+
+        <main>
+            <h1>テキスト抽出結果</h1>
+            <form class="text-editor-form" action="/create" method="post">
+                <div class="text-editor">
+                    <label for="extracted-text">抽出されたテキスト（編集可能）:</label>
+                    <textarea id="extracted-text" rows="20" th:text="${text}" name="textinput"></textarea>
+                </div>
+                <div class="options">
+                    <div class="option-group">
+                        <label>問題数</label>
+                        <select id="question-count" name="number">
+                            <option value="1">1問</option>
+                            <option value="2">2問</option>
+                            <option value="3">3問</option>
+                            <option value="4">4問</option>
+                            <option value="5">5問</option>
+                            <option value="6">6問</option>
+                            <option value="7">7問</option>
+                            <option value="8">8問</option>
+                            <option value="9">9問</option>
+                            <option value="10">10問</option>
+                        </select>
+                    </div>
+                    <div class="option-group">
+                        <label>問題形式:</label>
+                        <select id="question-type" name="form">
+                            <option value="4択問題">4択問題</option>
+                            <option value="穴埋め問題">穴埋め問題</option>
+                            <option value="記述問題">記述式問題</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" id="generate-questions" class="generate-button">問題を生成する</button>
+
+            </form>
+        </main>
+    </div>
+    <a th:href="@{/}">戻る</a>
+    <script src="js/main.js"></script>
 </body>
+
 </html>

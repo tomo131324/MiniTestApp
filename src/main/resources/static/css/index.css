@@ -1,40 +1,302 @@
+
+@charset "UTF-8";
+
+:root {
+  --bg-color: #f3f4f6;
+  --text-color: #1f2937;
+  --border-color: #e5e7eb;
+  --hover-color: #d1d5db;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+
 body {
   font-family: Arial, sans-serif;
-  padding: 20px;
-  line-height: 1.6;
+  background-color: #1a1a1a;
+  color: #FFFFFF;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* header */
+header {
   background-color: #1E1F20;
-  color: white;
+  border-bottom: 1px solid #2F3336;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
 }
 
-.camera-section, .image-container, .result-container {
-  margin-bottom: 20px;
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.camera video {
+
+.icon-button {
+  background: none;
+  border: none;
+  color: #FFFFFF;
+  cursor: pointer;
+  padding: 5px;
+  margin-right: 10px;
+  display: flex;
+}
+
+.icon-button:hover {
+  background-color: #2A2B32;
+  border-radius: 5px;
+}
+
+.header-title {
+  font-weight: 600;
+}
+
+
+.main-title {
+  font-size: 24px;
+  margin-bottom: 30px;
+}
+
+nav ul {
+  display: flex;
+  gap: 1rem;
+  list-style-type: none;
+}
+
+/* main */
+main {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.description {
+  font-size: 1.2rem;
+  max-width: 600px;
+  margin-bottom: 2rem;
+}
+
+.upload-form {
+  background-color: #2a2a2a;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  /* max-width: 400px; */
+  max-width: 800px;
+  width: 100%;
+}
+
+.upload-label {
+  display: block;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+
+.upload-area {
+  border: 2px dashed var(--border-color);
+  border-radius: 0.5rem;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+}
+
+.upload-icon {
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 1rem;
+}
+
+.upload-area p {
+  margin: 0.5rem 0;
+}
+
+.upload-area .small {
+  font-size: 0.8rem;
+  color: var(--text-color);
+  opacity: 0.7;
+}
+
+.file-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--bg-color);
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  margin-top: 1rem;
+}
+
+.remove-file {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.upload-button {
   display: block;
   width: 100%;
-  max-width: 500px;
-  height: auto;
-  margin-bottom: 10px;
-}
-
-.image-container img, .result-container img {
-  max-width: 500px;
-  height: auto;
-  display: block;
-}
-
-button {
-  padding: 10px 15px;
-  font-size: 16px;
+  padding: 0.75rem;
+  margin-top: 1rem;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  font-size: 1rem;
   cursor: pointer;
-  margin-top: 10px;
 }
 
-.correct {
-    color: green;
+.upload-button:hover {
+  background-color: #1d4ed8;
 }
 
-.incorrect {
-    color: red;
+.upload-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.hidden {
+  display: none;
+}
+
+nav ul {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  list-style: none;
+}
+
+/* ログインボタンとサインアップボタンのデザイン */
+.auth-button {
+  font-weight: 600;
+  /* header-title と同じサイズ */
+  padding: 12px 24px;
+  border-radius: 30px;
+  /* より丸い形に */
+  cursor: pointer;
+  transition: background-color 0.3s;
+  border: 2px solid transparent;
+  /* ボーダーを透明に設定して角を丸くする */
+  text-decoration: none;
+}
+
+.auth-button:nth-child(1) {
+  background-color: white;
+  color: #1f2937;
+  /* テキストカラーをダークに */
+  border-color: #1f2937;
+  /* ボーダー色をログインボタンに合わせて */
+}
+
+.auth-button:nth-child(2) {
+  background-color: #333;
+  /* 黒色 */
+  color: white;
+  border-color: #333;
+  /* サインアップボタンのボーダーを黒く */
+}
+
+/* ログインボタンとサインアップボタンのホバー効果 */
+.auth-button:hover {
+  background-color: #f9fafb;
+}
+
+.auth-button:nth-child(1):hover {
+  background-color: #f9fafb;
+  /* ログインボタンのホバー時 */
+}
+
+.auth-button:nth-child(2):hover {
+  background-color: #4a4a4a;
+  /* サインアップボタンのホバー時 */
+}
+
+/* ログアウトボタンのデザイン */
+.logout-button {
+  font-weight: 600;
+  /* header-title と同じサイズ */
+  padding: 12px 24px;
+  border-radius: 30px;
+  /* より丸い形に */
+  cursor: pointer;
+  transition: background-color 0.3s;
+  border: 2px solid transparent;
+  /* ボーダーを透明に設定して角を丸くする */
+}
+
+.logout-button {
+  background-color: white;
+  color: #1f2937;
+  /* テキストカラーをダークに */
+  border-color: #1f2937;
+  /* ログアウトボタンに合わせたボーダー色 */
+}
+
+/* ログアウトボタンのホバー効果 */
+.logout-button:hover {
+  background-color: #f9fafb;
+}
+
+/* サイドバーのスタイル */
+#sidebar {
+  position: fixed;
+  top: 60px;
+  /* ヘッダーの高さ分だけ下げる */
+  left: -250px;
+  width: 250px;
+  height: calc(100% - 60px);
+  /* 画面全体の高さからヘッダーの高さ分を引く */
+  background-color: #333;
+  color: white;
+  transition: left 0.3s ease;
+}
+
+#sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#sidebar ul li {
+  padding: 15px;
+  border-bottom: 1px solid #444;
+}
+
+#sidebar ul li a {
+  color: white;
+  text-decoration: none;
+}
+
+/* サイドバーを表示するためのクラス */
+#sidebar.open {
+  left: 0;
+}
+
+.open-sidebar {
+  cursor: pointer;
 }

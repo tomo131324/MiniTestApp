@@ -22,6 +22,8 @@ import com.example.MiniTest.service.QuestionService;
 import com.example.MiniTest.service.SaveService;
 import com.example.MiniTest.service.UserService;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
@@ -32,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.validation.BindingResult;
@@ -61,27 +64,67 @@ public class MainController {
     public String login() {
         return "login";
     }
+    
+    // パスワードリセットページの表示
+    @GetMapping("/password-reset")
+    public String showPasswordResetPage() {
+        return "password-reset"; // password-reset.html に遷移
+    }
+
+    // パスワードリセットの処理
+    @PostMapping("/password-reset")
+    public String resetPassword(@RequestParam("email") String email,
+            @RequestParam("newPassword") String newPassword,
+            Model model) {
+        // メールアドレスが登録されているかチェック
+        if (userService.changePassword(email, newPassword)) {
+            // パスワードが正常に変更されたことをユーザーに伝える
+            model.addAttribute("message", "パスワードが変更されました。");
+            return "password-reset-success"; // 成功メッセージ画面
+        } else {
+            // メールアドレスが見つからない場合
+            model.addAttribute("error", "そのメールアドレスは登録されていません。");
+            return "password-reset"; // エラーメッセージを表示
+        }
+    }
 
     // 新規登録画面を表示
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
         model.addAttribute("registerForm", new RegisterForm());
-        return "register-form";
+        return "signup";
     }
 
     @PostMapping("/register/create")
-    public String createUser(@Valid @ModelAttribute("registerForm") RegisterForm registerForm, BindingResult result,Model model) {
-    	if (result.hasErrors() ) {
-    		return "register-form";
-    	}
-    	
-    	User user = new User();
-    	user.setEmail(registerForm.getEmail());
-    	user.setPassword(registerForm.getPassword());
-    	user.setCreatedAt(Instant.now());
-    	
-    	userService.createUser(user);
-    	return "redirect:/";
+    public String createUser(@Valid @ModelAttribute("registerForm") RegisterForm registerForm, BindingResult result,
+            Model model, HttpSession session, RedirectAttributes redirectAttributes, HttpServletRequest request) {
+        if (result.hasErrors()) {
+            return "signup";
+        }
+
+        // メールアドレスの重複チェック
+        if (userService.emailExists(registerForm.getEmail())) {
+            redirectAttributes.addFlashAttribute("emailError", "このメールアドレスは既に登録されています。");
+            return "redirect:/register";
+        }
+
+        User user = new User();
+        user.setEmail(registerForm.getEmail());
+        user.setPassword(registerForm.getPassword());
+        user.setCreatedAt(Instant.now());
+
+        userService.createUser(user);
+
+        try {
+            // サーバーサイドでログイン処理を実行
+            request.login(registerForm.getEmail(), registerForm.getPassword());
+        } catch (ServletException e) {
+            // エラー処理
+            redirectAttributes.addFlashAttribute("loginError", "自動ログインに失敗しました。もう一度お試しください。");
+            return "redirect:/login";
+        }
+
+        return "redirect:/";
     }
    
     //お気に入り
@@ -131,10 +174,10 @@ public class MainController {
             // セッションにOCR結果を保存
             session.setAttribute("ocrResult", text);
 
-            // 結果画面にリダイレクト
-            return "redirect:/result";
+            // 結果画面に遷移
+            return "result";
         }
-        return "/error";
+        return "error";
     }
 
     // 結果ページ
@@ -144,11 +187,13 @@ public class MainController {
         String text = (String) session.getAttribute("ocrResult");
         if (text != null) {
             model.addAttribute("text", text);
-            sessionStatus.setComplete();
         } else {
             model.addAttribute("text", "");
-            sessionStatus.setComplete();
+            
         }
+        
+        // セッションの値を使用した後にセッション破棄
+        sessionStatus.setComplete();
         return "result";
     }
     

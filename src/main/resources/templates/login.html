@@ -1,42 +1,46 @@
+
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="ja">
 
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ログイン</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
-  integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
-<link href="/css/style.css" rel="stylesheet">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Login</title>
+	<link rel="stylesheet" href="css/login.css">
 </head>
 
 <body>
-  <div class="container">
-    <div class="wrapper">
-      <form th:action="@{/login}" method="post" class="form-signin">
-        <h3 class="form-signin-heading">Welcome Back!</h3>
-        <h3 class="form-signin-heading">Please Sign In</h3>
-        <hr class="colorgraph">
-        <br>
-        <div th:if="${param.error}">
-          <div th:if="${session.containsKey('SPRING_SECURITY_LAST_EXCEPTION')}">
-            <div class="alert alert-danger">
-              <i class="bi bi-exclamation-triangle-fill"></i>
-              <span th:text="${session.SPRING_SECURITY_LAST_EXCEPTION.message}"></span>
-            </div>
-          </div>
-        </div>
-        <input type="text" name="username" placeholder="メールアドレス" class="form-control" required />
-        <input type="password" name="password" placeholder="パスワード" class="form-control" required />
-        <button class="btn form-control btn-outline-primary" name="Submit" value="Login" type="Submit">Login</button>
-        <p></p>
-      </form>
-    </div>
-  </div>
-  <div>
-	  <a th:href="@{/register}">新規登録</a>
-  </div>
+	<div class="container">
+		<div class="login-box">
+			<h1>お帰りなさい</h1>
+			<form th:action="@{/login}" method="post">
+				<div th:if="${param.error}">
+					<div class="alert alert-danger">
+						<i class="bi bi-exclamation-triangle-fill"></i>
+						<span>ログインに失敗しました。正しいメールアドレスとパスワードを入力してください。</span>
+					</div>
+				</div>
+				<div class="input-group">
+					<input type="text" id="email" name="username" required>
+					<label for="email">Email</label>
+				</div>
+				<div class="input-group">
+					<input type="password" id="password" name="password" required>
+					<label for="password">Password</label>
+				</div>
+				<button type="submit">Log in</button>
+			</form>
+			<p class="reset-password">
+				パスワードをお忘れですか？
+				<a th:href="@{/password-reset}" class="link-color">こちらへ</a>
+			</p>
+			<p class="signup-link">
+				アカウントをお持ちではありませんか？
+				<a th:href="@{/register}" class="link-color">サインアップ</a>
+			</p>
+		</div>
+	</div>
+	</div>
 </body>
 
 </html>
