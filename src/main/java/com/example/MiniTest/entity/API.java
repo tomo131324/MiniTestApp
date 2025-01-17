@@ -17,7 +17,12 @@ public class API {
 
     @JsonProperty("Answer")
     private String answer;
-
+    
+    @JsonProperty("Answers")
+    private List<String> answers;
+    
     @JsonProperty("Choices")
     private List<String> choices;
+    
+    private Integer testId;
 }

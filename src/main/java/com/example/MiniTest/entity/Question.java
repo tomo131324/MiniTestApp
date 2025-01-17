@@ -29,6 +29,8 @@ public class Question {
 	
 	private String answer;
 	
+	private List<String> answers;
+	
 	private List<String> choices;
 	
 	@Column(value = "question_type")

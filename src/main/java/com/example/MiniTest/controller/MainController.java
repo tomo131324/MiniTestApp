@@ -5,9 +5,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -16,7 +16,6 @@ import org.springframework.ui.Model;
 import com.example.MiniTest.entity.API;
 import com.example.MiniTest.entity.Question;
 import com.example.MiniTest.entity.User;
-import com.example.MiniTest.form.MainForm;
 import com.example.MiniTest.form.RegisterForm;
 import com.example.MiniTest.service.ApiService;
 import com.example.MiniTest.service.QuestionService;
@@ -35,7 +34,6 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.validation.BindingResult;
 
 @Controller
@@ -51,10 +49,6 @@ public class MainController {
     private SaveService saveService;
     @Autowired
     private QuestionService questionService;
-
-    private File tempFile;
-    
-    private String questionType;
 	
     // 初期画面
     @GetMapping
@@ -89,23 +83,35 @@ public class MainController {
     	userService.createUser(user);
     	return "redirect:/";
     }
-    
-    //テキスト入力
-    @GetMapping("/text-input")
-    public String textInput() {
-        return "text-input";
-    }
-
-    //利用ガイド
-    @GetMapping("/guide")
-    public String guide() {
-        return "guide";
-    }
-
+   
     //お気に入り
     @GetMapping("/favorite")
     public String favorite(Model model) {
+    	Integer userId = questionService.getCurrentUserId();
+    	List<Map<String, Object>> question = questionService.getFirstQuestions(userId);
+    	model.addAttribute("questions", question);
         return "favorite";
+    }
+    
+    //削除処理
+    @PostMapping("/{testId}/delete")
+    public String deleteQuestions(@RequestParam("testId") Integer testId) {
+    	Integer userId = questionService.getCurrentUserId();
+    	saveService.deleteQuestionsById(testId,userId);
+    	return "redirect:/";
+    }
+    
+    //お気に入りから問題画面
+    @PostMapping("/{testId}")
+    public String pastQuestion(@RequestParam("testId") Integer testId, Model model) {
+    	Integer userId = questionService.getCurrentUserId();
+    	Iterable<Question> questions = questionService.getQuestions(userId,testId);
+    	Iterator<Question> iterator = questions.iterator();
+    	String form = iterator.next().getQuestionType();
+    	
+    	model.addAttribute("questions",questions);
+    	model.addAttribute("form", form);
+    	return "questions";
     }
     
     @PostMapping("/ocr")
@@ -148,52 +154,84 @@ public class MainController {
     
     //問題作成
     @PostMapping("/create")
-    public String create(@RequestParam("number") int number, @RequestParam("form") String form, @RequestParam("textinput") String textinput,HttpSession session, Model model){
+    public String create(@RequestParam("number") int number, @RequestParam("form") String form, @RequestParam("textinput") String textinput, Model model){
     	//ユーザーIDと最新テストID取得
     	Integer userId = questionService.getCurrentUserId();
     	Integer latestTestId = questionService.getLatestTestId(userId);
     	
-    	switch (form) {
-        case "記述問題":
-        	List<API> descriptionQuestions = apiservice.descriptionQuestion(textinput,number);
-            model.addAttribute("questions", descriptionQuestions);
-            questionType = "記述問題";
-            break;
-        case "4択問題":
-        	List<API> choiceQuestions = apiservice.choiceQuestion(textinput,number);
-            model.addAttribute("questions", choiceQuestions);
-            questionType = "4択問題";
-            saveService.addQuestion(choiceQuestions,userId,questionType,latestTestId);
-            break;
-        case "穴埋め問題":
-        	List<API> holeQuestions = apiservice.holeQuestion(textinput,number);
-            model.addAttribute("questions", holeQuestions);
-            questionType = "穴埋め問題";
-            break;
-        }
+        List<API> Questions = apiservice.createQuestion(textinput,number,form);
+        model.addAttribute("questions", Questions);
+        model.addAttribute("form", form);
+        //問題保存
+        saveService.addQuestion(Questions,userId,form,latestTestId);
     	
-    	return "choiceQuestion";
+    	return "questions";
     }
     
     
     //採点
     @PostMapping("/scoring")
-    public String scoring(@RequestParam Map<String, String> answers, Model model) {
+    public String scoring(@RequestParam Map<String, String> answers, @RequestParam(name = "testId", required = false) Integer testId, @RequestParam("form") String form, Model model) {
     	//ユーザーIDと最新テストID取得
     	Integer userId = questionService.getCurrentUserId();
-    	Integer latestTestId = questionService.getLatestTestId(userId);
-        // MapからListに変換
-        List<String> userAnswer = new ArrayList<>(answers.values());
-    	//正誤取得
-    	List<Boolean> correction = questionService.scoring(userAnswer);
+    	// Mapからリストに変換
+        List<Object> userAnswer = new ArrayList<>();
+
+        for (Map.Entry<String, String> entry : answers.entrySet()) {
+            String key = entry.getKey(); //answersのキー取得
+            String value = entry.getValue(); //answersのvalue取得
+
+            // 穴埋め問題の処理（キー形式: answers[数字][数字]）
+            if (key.matches("answers\\[\\d+]\\[\\d+]")) {
+                
+                int mainIndex = Integer.parseInt(key.substring(key.indexOf('[') + 1, key.indexOf(']')));
+                int subIndex = Integer.parseInt(key.substring(key.lastIndexOf('[') + 1, key.lastIndexOf(']')));
+
+                // 必要に応じてリストを拡張
+                while (userAnswer.size() <= mainIndex) {
+                    userAnswer.add(new ArrayList<String>());
+                }
+
+                // リストを取得して値を設定
+                List<String> subList = (List<String>) userAnswer.get(mainIndex);
+                while (subList.size() <= subIndex) {
+                    subList.add(null);
+                }
+                subList.set(subIndex, value);
+
+             // 記述問題または4択問題の処理（キー形式: answers[数字]）
+            } else if (key.matches("answers\\[\\d+]")) {
+                
+                int index = Integer.parseInt(key.substring(key.indexOf('[') + 1, key.indexOf(']')));
+
+                // 必要に応じてリストを拡張
+                while (userAnswer.size() <= index) {
+                    userAnswer.add(null);
+                }
+
+                // 値を設定
+                userAnswer.set(index, value);
+            }
+        }
+        
+    	//testIdがnullの場合は、最新のテストIDを取得
+    	if (testId == null) {
+    		testId = questionService.getLatestTestId(userId);
+    	}
     	
-    	model.addAttribute("questions", questionService.getQuestions(userId, latestTestId));
+    	//正誤取得
+        if ("4択問題".equals(form)) { 
+        	List<Boolean> correction = questionService.scoring(userAnswer,testId);
+        	model.addAttribute("correction", correction);
+        }
+        
+    	model.addAttribute("questions", questionService.getQuestions(userId, testId));
+    	model.addAttribute("form", form);
     	model.addAttribute("userAnswer", userAnswer);
-    	model.addAttribute("correction", correction);
-    	return "/scoring";
+
+    	return "scoring";
     }
     
-   
 }
 
 

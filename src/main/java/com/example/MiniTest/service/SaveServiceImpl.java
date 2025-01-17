@@ -24,23 +24,31 @@ public class SaveServiceImpl implements SaveService {
     
 	//問題保存
     @Override
-    public void addQuestion(List<API> choiceQuestions, Integer userId, String questionType, Integer latestTestId) {
+    public void addQuestion(List<API> Questions, Integer userId, String questionType, Integer latestTestId) {
     	//テストID更新
     	int testId = latestTestId + 1;
     	
-    	for (API questions : choiceQuestions) {
+    	for (API questions : Questions) {
     		Question question = new Question();
 			question.setUserId(userId);
 			question.setTestId(testId);
 			question.setQuestion(questions.getQuestion());
 			question.setAnswer(questions.getAnswer());
+			question.setAnswers(questions.getAnswers());
 			question.setChoices(questions.getChoices());
 			question.setQuestionType(questionType);
 			question.setCreatedAt(Instant.now());
+
 			questionRepository.save(question);
     	}
     	
 
+    }
+    
+    //削除
+    @Override
+    public void deleteQuestionsById(Integer testId, Integer userId) {
+    	questionRepository.deleteByTestIdAndUserId(testId,userId);
     }
     
 }

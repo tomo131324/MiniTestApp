@@ -1,55 +1,29 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <title>お気に入り</title>
-    <link rel="stylesheet" href="css/favorite.css">
+<meta charset="UTF-8">
+<title>お気に入り</title>
 </head>
 <body>
-    <div class="container">    
-        <!-- ポップアップを開くボタン -->
-        <button id="openPopupButton">+小テストを作成</button>
-        
-        <!-- ポップアップ -->
-        <div id="popup" class="hidden">
-            <div class="popup-content">
-                <span id="closePopupButton" class="close-button">&times;</span>
-                <form action="/createMiniTest" method="post">
-                	<input type="text" name="test_name" th:value="${miniTest.test_name}" placeholder="テスト名を入力してください">
-                	<button type="submit">決定</button>
+	<table>
+		<tr>
+        	<th>履歴</th>
+            <th></th>
+        </tr>
+        <tr th:each="question : ${questions}">
+            <td>
+				<form th:action="@{/{testId}(id=${question.testId})}"method="post">
+					<input type="hidden" th:name="testId" th:value="${question.testId}">
+					<button type="submit" th:text="${question.question}"></button>
+				</form>
+			</td>
+            <td>
+        		<form th:action="@{/{testId}/delete(id=${question.testId})}" method="post">
+					<input type="hidden" th:name="testId" th:value="${question.testId}">
+                    <button type="submit">削除</button>
                 </form>
-            </div>
-        </div>    
-
-        <!-- メイン内容 -->
-        <h1>お気に入り機能</h1>
-        
-        <form action="/createMiniTest" method="post">
-        	<div th:each="miniTestName : ${miniTestName}">
-				<input type="hidden" name="testId" th:value="${miniTestName.test_id}">
-				<button type="submit" th:text="${miniTestName.test_name}"></button>
-			</div>
-        </form>
-        	
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>問題形式</th>
-                        <th>問題</th>
-                        <th>作成時間</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="questions : ${questions}" >
-                        <td th:text="${questions.question_type}"></td>
-                        <td th:text="${questions.question}" th:onclick="location.href='/detail' + '/' + [[${questions.questionId}]]"></td>
-                        <td th:text="${questions.created_at}"></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <script src="js/favorite.js"></script>
+            </td>
+		</tr>
+	</table>
 </body>
 </html>

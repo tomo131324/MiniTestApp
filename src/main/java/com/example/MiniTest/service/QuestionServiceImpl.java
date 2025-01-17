@@ -1,7 +1,10 @@
 package com.example.MiniTest.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,12 +26,6 @@ public class QuestionServiceImpl implements QuestionService{
 	@Autowired
 	QuestionRepository questionRepository;
 	
-	/*
-	//全件取得
-	@Override
-	public Iterable<Question> getQuestions(){
-		return questionRepository.findAll();
-	}*/
 	
 	//テスト内全件取得
 	@Override
@@ -50,19 +47,28 @@ public class QuestionServiceImpl implements QuestionService{
     	return questionRepository.findMaxTestId(userId).orElse(0);
     }
     
+	//全件取得
+	@Override
+	public Iterable<Question> getQuestions(Integer userId){
+		return questionRepository.findByUserId(userId);
+	}
+    
 	//採点
 	@Override
-	public List<Boolean> scoring(List<String> userAnswers){
+	public List<Boolean> scoring(List<Object> userAnswers, Integer testId){
 		Integer userId = getCurrentUserId();
-		Integer latestTestId = getLatestTestId(userId);
 		List<Boolean> correction = new ArrayList<Boolean>();
 		List<String> answers = new ArrayList<String>();
-		Iterable<Question> questions = getQuestions(userId,latestTestId);
+		if (testId == null) {
+			testId = getLatestTestId(userId);
+		}
+		
+		Iterable<Question> questions = getQuestions(userId,testId);
 		
 		// answersに正解の答えを入れる
 	    for (Question question : questions) {
-	        answers.add(question.getAnswer());
-	    }
+	    	answers.add(question.getAnswer());
+	    	}
 	    
 	    // 正解の答えとユーザーの答えを比較
 	    for (int i = 0; i < answers.size(); i++) {
@@ -75,5 +81,43 @@ public class QuestionServiceImpl implements QuestionService{
 	    
 	    return correction;
 	}
+	
+	//問題文抽出
+	@Override
+    public List<Map<String, Object>> getFirstQuestions(Integer userId) {
+        // 全データを取得
+        Iterable<Question> allQuestions = getQuestions(userId);
 
+        // userId と testId ごとに最初の質問を保存するマップ
+        Map<String, Question> firstQuestionMap = new HashMap<>();
+
+        // データをループして userId と testId ごとに最初の質問を取得
+        for (Question question : allQuestions) {
+            String key = question.getUserId() + "-" + question.getTestId();
+
+            if (!firstQuestionMap.containsKey(key)) {
+                firstQuestionMap.put(key, question);
+            } else {
+                Question existingQuestion = firstQuestionMap.get(key);
+                if (question.getCreatedAt().compareTo(existingQuestion.getCreatedAt()) < 0) {
+                    firstQuestionMap.put(key, question);
+                }
+            }
+        }
+
+        // 結果リストを作成
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Map.Entry<String, Question> entry : firstQuestionMap.entrySet()) {
+            Question question = entry.getValue();
+            Map<String, Object> resultMap = new HashMap<>();
+            resultMap.put("question", question.getQuestion().substring(0, Math.min(10, question.getQuestion().length())));
+            resultMap.put("testId", question.getTestId());
+            result.add(resultMap);
+        }
+        
+        // 結果リストを逆順にする
+        Collections.reverse(result);
+
+        return result;
+    }
 }

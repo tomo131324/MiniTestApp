@@ -10,11 +10,8 @@ public interface ApiService {
 
 	String extractText(File tempFile) throws IOException;
 	
-	List<API> choiceQuestion(String textinput, int number);
+	List<API> createQuestion(String textinput, int number, String form);
 
-	List<API> descriptionQuestion(String textinput, int number);
-	
-	List<API> holeQuestion(String textinput, int number);
 	
 }
 

@@ -1,6 +1,7 @@
 package com.example.MiniTest.service;
 
 import java.util.List;
+import java.util.Map;
 
 import com.example.MiniTest.entity.Question;
 
@@ -12,5 +13,9 @@ public interface QuestionService {
 	
 	Integer getLatestTestId(Integer userId);
 	
-	List<Boolean> scoring(List<String> answers);
+	Iterable<Question> getQuestions(Integer userId);
+	
+	List<Boolean> scoring(List<Object> answers, Integer testId);
+	
+	List<Map<String, Object>> getFirstQuestions(Integer userId);
 }

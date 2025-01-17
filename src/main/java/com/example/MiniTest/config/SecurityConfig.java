@@ -25,6 +25,8 @@ public class SecurityConfig {
             .ignoringRequestMatchers("/insert")
             .ignoringRequestMatchers("/createMiniTest")
             .ignoringRequestMatchers("/updateMiniTest")
+            .ignoringRequestMatchers("/{id}/delete")
+            .ignoringRequestMatchers("/{testId}/scoring")
         )
         .formLogin(login -> login
             .loginPage("/login")

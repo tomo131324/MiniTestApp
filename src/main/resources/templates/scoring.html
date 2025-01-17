@@ -8,14 +8,37 @@
 <body>
 	<h1>採点結果</h1>
     	<div th:each="question, qStat : ${questions}">
+			<span>問題</span>
+			<span th:text="${qStat.index + 1}"></span><br/>
         	<span th:text="${question.question}"></span><br/>
-            <div th:each="choice : ${question.choices}">
-                <!-- 各選択肢に色を付けるクラスを付与 -->
-                <span 
-    				th:text="${choice}" 
-    				th:classappend="${userAnswer.contains(choice) ? (correction[qStat.index] ? 'correct' : 'incorrect') : ''}">
-				</span><br/>
+        	
+        	<div th:if="${form} == '記述問題'">
+				<span>あなたの解答 : </span>
+				<span th:text="${userAnswer[qStat.index]}"></span><br/>
+				<span>解答例　　　 : </span>
+				<span th:text="${question.answer}"></span><br/>
+			</div>
+        	
+        	<div th:if="${form} == '4択問題'">
+            	<div th:each="choice : ${question.choices}">
+					<span th:if="${choice == userAnswer[qStat.index]}"
+      					th:classappend="${correction[qStat.index] ? 'correct' : 'incorrect'}"
+      					th:text="${choice}"></span>
+      				<span th:if="${choice != userAnswer[qStat.index]}"
+						th:classappend="${choice == question.answer ? 'correct' : ''}"
+      					th:text="${choice}"></span>
+            	</div>
             </div>
+            
+			<div th:if="${form} == '穴埋め問題'">
+				<div th:each="answer, answerStat : ${question.answers}">
+					<span th:text="${answerStat.index + 1}"></span>
+					<span>の解答 : </span>
+					<span th:text="${userAnswer[qStat.index][answerStat.index]}"></span><br/>
+					<span>解答例　: </span>
+					<span th:text="${answer}"></span><br/>
+				</div>
+			</div>
         </div>
 	<a href="/">トップページに戻る</a>
 </body>
