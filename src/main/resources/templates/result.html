@@ -27,15 +27,31 @@
                 </ul>
             </nav>
         </header>
-        <div id="sidebar">
-            <ul>
-                <li>履歴</li>
-                <li><a href="#">ホーム</a></li>
-                <li><a href="#">プロフィール</a></li>
-                <li><a href="#">設定</a></li>
-            </ul>
-        </div>
-
+        
+		<!-- サイドバーの追加 -->
+		<div id="sidebar">
+			<ul>
+    			<li>履歴</li>
+    			<li th:each="getQuestion : ${getQuestions}" class="clickable-row">
+        			<a th:href="@{/{testId}(testId=${getQuestion.testId})}" class="row-link">
+            			<span th:text="${getQuestion.question}"></span>
+        			</a>
+        			<a th:href="@{/{testId}/delete(testId=${getQuestion.testId})}" 
+        				class="delete-btn">
+                		×
+           			 </a>
+   				</li>
+			</ul>
+			<!-- 削除確認モーダル -->
+			<div id="deleteModal" class="modal">
+  				<div class="modal-content">
+    				<p>この問題を削除しますか？</p>
+    				<button id="cancelDelete">キャンセル</button>
+    				<button id="confirmDelete">削除</button>
+  				</div>
+			</div>
+		</div>
+		
         <main>
             <h1>テキスト抽出結果</h1>
             <form class="text-editor-form" action="/create" method="post">

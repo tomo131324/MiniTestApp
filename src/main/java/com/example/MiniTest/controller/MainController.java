@@ -37,6 +37,7 @@ import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.validation.BindingResult;
 
 @Controller
@@ -55,7 +56,10 @@ public class MainController {
 	
     // 初期画面
     @GetMapping
-    public String showCameraPage() {
+    public String showCameraPage(Model model) {
+    	Integer userId = userService.getCurrentUserId();
+    	List<Map<String, Object>> getQuestions = questionService.getFirstQuestions(userId);
+    	model.addAttribute("getQuestions", getQuestions);
         return "index";
     }
 
@@ -130,24 +134,24 @@ public class MainController {
     //お気に入り
     @GetMapping("/favorite")
     public String favorite(Model model) {
-    	Integer userId = questionService.getCurrentUserId();
+    	Integer userId = userService.getCurrentUserId();
     	List<Map<String, Object>> question = questionService.getFirstQuestions(userId);
     	model.addAttribute("questions", question);
         return "favorite";
     }
     
     //削除処理
-    @PostMapping("/{testId}/delete")
-    public String deleteQuestions(@RequestParam("testId") Integer testId) {
-    	Integer userId = questionService.getCurrentUserId();
+    @GetMapping("/{testId}/delete")
+    public String deleteQuestions(@PathVariable("testId") Integer testId) {
+    	Integer userId = userService.getCurrentUserId();
     	saveService.deleteQuestionsById(testId,userId);
     	return "redirect:/";
     }
     
     //お気に入りから問題画面
-    @PostMapping("/{testId}")
-    public String pastQuestion(@RequestParam("testId") Integer testId, Model model) {
-    	Integer userId = questionService.getCurrentUserId();
+    @GetMapping("/{testId}")
+    public String pastQuestion(@PathVariable("testId") Integer testId, Model model) {
+    	Integer userId = userService.getCurrentUserId();
     	Iterable<Question> questions = questionService.getQuestions(userId,testId);
     	Iterator<Question> iterator = questions.iterator();
     	String form = iterator.next().getQuestionType();
@@ -201,7 +205,7 @@ public class MainController {
     @PostMapping("/create")
     public String create(@RequestParam("number") int number, @RequestParam("form") String form, @RequestParam("textinput") String textinput, Model model){
     	//ユーザーIDと最新テストID取得
-    	Integer userId = questionService.getCurrentUserId();
+    	Integer userId = userService.getCurrentUserId();
     	Integer latestTestId = questionService.getLatestTestId(userId);
     	
         List<API> Questions = apiservice.createQuestion(textinput,number,form);
@@ -218,7 +222,7 @@ public class MainController {
     @PostMapping("/scoring")
     public String scoring(@RequestParam Map<String, String> answers, @RequestParam(name = "testId", required = false) Integer testId, @RequestParam("form") String form, Model model) {
     	//ユーザーIDと最新テストID取得
-    	Integer userId = questionService.getCurrentUserId();
+    	Integer userId = userService.getCurrentUserId();
     	// Mapからリストに変換
         List<Object> userAnswer = new ArrayList<>();
 
@@ -266,7 +270,7 @@ public class MainController {
     	
     	//正誤取得
         if ("4択問題".equals(form)) { 
-        	List<Boolean> correction = questionService.scoring(userAnswer,testId);
+        	List<Boolean> correction = questionService.scoring(userAnswer,testId,userId);
         	model.addAttribute("correction", correction);
         }
         

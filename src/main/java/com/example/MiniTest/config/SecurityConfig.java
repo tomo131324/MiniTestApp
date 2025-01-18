@@ -26,7 +26,7 @@ public class SecurityConfig {
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
         .csrf(csrf -> csrf
-            .ignoringRequestMatchers("/ocr", "/create", "/scoring", "/{id}/delete")// /ocrエンドポイントでCSRF保護を無効化
+            .ignoringRequestMatchers("/ocr", "/create", "/scoring", "/{testId}", "/{testId}/delete")// /ocrエンドポイントでCSRF保護を無効化
         )
         .formLogin(login -> login
             .loginPage("/login")
@@ -34,10 +34,9 @@ public class SecurityConfig {
             .permitAll()
         )
         .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/css/**", "/js/**", "/", "/register/**", "/password-reset",
-                        "/register")
-                .permitAll()
-                .anyRequest().authenticated());
+                .requestMatchers("/", "/css/**", "/js/**", "/register/**", "/password-reset").permitAll() // トップページのパス `/` を許可
+                .anyRequest().authenticated()
+            );
 return http.build();
 }
 	

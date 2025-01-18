@@ -4,6 +4,30 @@ document.getElementById('logo').addEventListener('click', function () {
     sidebar.classList.toggle('open');
 });
 
+// 削除確認js
+var modal = document.getElementById('deleteModal');
+var confirmDeleteBtn = document.getElementById('confirmDelete');
+var cancelDeleteBtn = document.getElementById('cancelDelete');
+
+// 各削除ボタンにクリックイベントを追加
+var deleteBtns = document.querySelectorAll('.delete-btn');
+deleteBtns.forEach(function(btn) {
+  btn.addEventListener('click', function(event) {
+    event.preventDefault(); // デフォルトのリンク動作を防ぐ
+    modal.style.display = 'block'; // モーダルを表示
+    var deleteUrl = this.getAttribute('href'); // 削除リンクのURLを取得
+    confirmDeleteBtn.onclick = function() {
+      window.location.href = deleteUrl; // 確認ボタンで削除実行
+    };
+  });
+});
+
+// キャンセルボタンでモーダルを非表示
+cancelDeleteBtn.onclick = function() {
+  modal.style.display = 'none';
+};
+
+
 // upload-areaクリックでファイル選択を起動
 document.getElementById('upload-area').addEventListener('click', function () {
     document.getElementById('image-upload').click();

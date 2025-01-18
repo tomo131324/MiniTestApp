@@ -40,14 +40,29 @@
 		<!-- サイドバーの追加 -->
 		<div id="sidebar">
 			<ul>
-				<li>履歴</li>
-				<li><a href="#">ホーム</a></li>
-				<li><a href="#">プロフィール</a></li>
-				<li><a href="#">設定</a></li>
+    			<li>履歴</li>
+    			<li th:each="getQuestion : ${getQuestions}" class="clickable-row">
+        			<a th:href="@{/{testId}(testId=${getQuestion.testId})}" class="row-link">
+            			<span th:text="${getQuestion.question}"></span>
+        			</a>
+        			<a th:href="@{/{testId}/delete(testId=${getQuestion.testId})}" 
+        				class="delete-btn">
+                		×
+           			 </a>
+   				</li>
 			</ul>
+			<!-- 削除確認モーダル -->
+			<div id="deleteModal" class="modal">
+  				<div class="modal-content">
+    				<p>この問題を削除しますか？</p>
+    				<button id="cancelDelete">キャンセル</button>
+    				<button id="confirmDelete">削除</button>
+  				</div>
+			</div>
 		</div>
 
 		<main>
+			<span th:text="${userId}"></span>
 			<h1>まずは、画像から文章を取り出してみましょう！</h1>
 			<p class="description">アップロードした画像から文章を取り出して、問題を作成します。</p>
 			<form id="upload-form" class="upload-form" onsubmit="return uploadImage(event);">

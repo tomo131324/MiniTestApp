@@ -33,13 +33,6 @@ public class QuestionServiceImpl implements QuestionService{
 		return questionRepository.findByUserIdAndTestId(userId,testId);
     }
 	
-	//ログイン中のユーザーID取得
-    @Override
-    public Integer getCurrentUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        LoginUserDetails userDetails = (LoginUserDetails) authentication.getPrincipal();
-        return userDetails.getUserId(); // ログイン中のユーザーIDを取得
-    }
 	
     //ユーザーごとの最新のテストID取得
     @Override
@@ -55,8 +48,7 @@ public class QuestionServiceImpl implements QuestionService{
     
 	//採点
 	@Override
-	public List<Boolean> scoring(List<Object> userAnswers, Integer testId){
-		Integer userId = getCurrentUserId();
+	public List<Boolean> scoring(List<Object> userAnswers, Integer testId, Integer userId){
 		List<Boolean> correction = new ArrayList<Boolean>();
 		List<String> answers = new ArrayList<String>();
 		if (testId == null) {
@@ -85,6 +77,10 @@ public class QuestionServiceImpl implements QuestionService{
 	//問題文抽出
 	@Override
     public List<Map<String, Object>> getFirstQuestions(Integer userId) {
+        // 結果リストを作成
+        List<Map<String, Object>> result = new ArrayList<>();
+        
+		if (userId != null) {
         // 全データを取得
         Iterable<Question> allQuestions = getQuestions(userId);
 
@@ -105,8 +101,6 @@ public class QuestionServiceImpl implements QuestionService{
             }
         }
 
-        // 結果リストを作成
-        List<Map<String, Object>> result = new ArrayList<>();
         for (Map.Entry<String, Question> entry : firstQuestionMap.entrySet()) {
             Question question = entry.getValue();
             Map<String, Object> resultMap = new HashMap<>();
@@ -118,6 +112,7 @@ public class QuestionServiceImpl implements QuestionService{
         // 結果リストを逆順にする
         Collections.reverse(result);
 
+		} 
         return result;
     }
 }

@@ -265,7 +265,7 @@ nav ul {
 /* サイドバーのスタイル */
 #sidebar {
   position: fixed;
-  top: 60px;
+  top: 80px;
   /* ヘッダーの高さ分だけ下げる */
   left: -250px;
   width: 250px;
@@ -283,13 +283,107 @@ nav ul {
 }
 
 #sidebar ul li {
-  padding: 15px;
+  position: relative; /* 削除ボタンの配置調整用 */
   border-bottom: 1px solid #444;
+  height: 50px;
 }
+
+#sidebar ul li:first-child {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 40px;
+}
+
 
 #sidebar ul li a {
   color: white;
   text-decoration: none;
+}
+
+#sidebar ul li .row-link {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 15px;
+  text-decoration: none;
+  color: white;
+}
+
+
+#sidebar ul li:hover .row-link {
+  background-color: #444; 
+}
+
+#sidebar ul li .delete-btn {
+  position: absolute; 
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  font-size: 20px;
+  cursor: pointer;
+  opacity: 0; /* 初期状態で非表示 */
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease; /* アニメーション */
+}
+
+#sidebar ul li:hover .delete-btn {
+  opacity: 1; /* ホバー時に表示 */
+  visibility: visible;
+}
+
+/* 削除確認の基本スタイル */
+.modal {
+  display: none; /* デフォルトでは非表示 */
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4); /* 背景の暗さ */
+}
+
+/* モーダルコンテンツのスタイル */
+.modal-content {
+  background-color: #1a1a1a;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  border-radius: 10px;
+  width: 80%;
+  max-width: 300px;
+  text-align: center;
+  color: white;
+}
+
+.modal-content p {
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+
+/* ボタンのスタイル */
+button {
+  padding: 10px 20px;
+  margin: 10px;
+  border: none;
+  border-radius: 5px; 
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* 削除ボタンの色 */
+#confirmDelete {
+  background-color: #ff4d4d;
+  color: white;
+}
+
+/* キャンセルボタンの色 */
+#cancelDelete {
+  background-color: #cccccc;
+  color: black;
 }
 
 /* サイドバーを表示するためのクラス */

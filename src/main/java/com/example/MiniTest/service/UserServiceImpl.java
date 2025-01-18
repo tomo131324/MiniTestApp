@@ -3,10 +3,13 @@ package com.example.MiniTest.service;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.MiniTest.config.LoginUserDetails;
 import com.example.MiniTest.entity.User;
 import com.example.MiniTest.repository.UserRepository;
 
@@ -33,6 +36,28 @@ public class UserServiceImpl implements UserService {
     	user.setPassword(password);
         userRepository.save(user);
     }
+    
+	//ログイン中のユーザーID取得
+    @Override
+    public Integer getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        // 認証情報が存在しない、または匿名ユーザーの場合
+        if (authentication == null || !authentication.isAuthenticated() || 
+            "anonymousUser".equals(authentication.getPrincipal())) {
+            return null; // 未ログイン時は null を返す
+        }
+        
+        // 認証済みユーザーの場合、型を確認して処理
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof LoginUserDetails) {
+            return ((LoginUserDetails) principal).getUserId(); // LoginUserDetails から userId を取得
+        }
+        
+        // 予期しないケース（安全のため例外をスローするか、null を返す）
+        throw new IllegalStateException("Unexpected principal type: " + principal.getClass());
+    }
+
     
     // メールアドレスでユーザーを検索
     @Override

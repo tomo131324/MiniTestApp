@@ -14,6 +14,8 @@ public interface UserService {
 
 	void createUser(User user);
 	
+	Integer getCurrentUserId();
+	
 	Optional<User> findByEmail(String email);
 	
 	void save(User user);

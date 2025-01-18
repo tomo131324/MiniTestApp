@@ -9,13 +9,11 @@ public interface QuestionService {
 	
 	Iterable<Question> getQuestions(Integer userId,Integer testId);
 	
-	Integer getCurrentUserId();
-	
 	Integer getLatestTestId(Integer userId);
 	
 	Iterable<Question> getQuestions(Integer userId);
 	
-	List<Boolean> scoring(List<Object> answers, Integer testId);
+	 List<Boolean> scoring(List<Object> userAnswers, Integer testId, Integer userId);
 	
 	List<Map<String, Object>> getFirstQuestions(Integer userId);
 }
