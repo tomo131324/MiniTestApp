@@ -18,7 +18,7 @@
 			
     		<div th:if="${form} == '4択問題'">
     			<div th:each="choice : ${question.choices}">
-        			<input type="radio" th:name="'answers[' + ${questionStat.index} + ']'" th:value="${choice}" />
+        			<input type="radio" th:name="'answers[' + ${questionStat.index} + ']'" th:value="${choice}" required/>
         			<span th:text="${choice}"></span><br/>
     			</div>
     		</div>

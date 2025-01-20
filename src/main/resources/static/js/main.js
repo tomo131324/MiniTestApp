@@ -136,3 +136,4 @@ function uploadImage(event) {
 
     reader.readAsDataURL(file);  // 画像ファイルをBase64エンコード
 }
+

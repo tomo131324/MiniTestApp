@@ -131,14 +131,6 @@ public class MainController {
         return "redirect:/";
     }
    
-    //お気に入り
-    @GetMapping("/favorite")
-    public String favorite(Model model) {
-    	Integer userId = userService.getCurrentUserId();
-    	List<Map<String, Object>> question = questionService.getFirstQuestions(userId);
-    	model.addAttribute("questions", question);
-        return "favorite";
-    }
     
     //削除処理
     @GetMapping("/{testId}/delete")
