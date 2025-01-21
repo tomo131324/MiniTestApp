@@ -23,15 +23,15 @@
 				<span class="header-title">作っと小テスト</span>
 			</div>
 			<nav>
-				<ul class="auth-nav">
-					<li>
-						<a class="auth-button" th:href="@{/login}" sec:authorize="isAnonymous()">ログイン</a>
-					</li>
-					<li>
-						<a class="auth-button" th:href="@{/register}" sec:authorize="isAnonymous()">サインアップ</a>
-					</li>
-					<form th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()">
-						<input type="submit" value="ログアウト" class="auth-button logout-button">
+				<ul class="auth-button">
+					<form class="auth-button login-button" action="@{/login}" method="post" sec:authorize="isAnonymous()">
+						<input type="submit" value="ログイン">
+					</form>
+					<form class="auth-button signup-button" action="/register" method="get" sec:authorize="isAnonymous()">
+						<input type="submit" value="サインアップ">
+					</form>
+					<form class="auth-button logout-button" th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()">
+						<input type="submit" value="ログアウト">
 					</form>
 				</ul>
 			</nav>
@@ -65,27 +65,27 @@
 			<span th:text="${userId}"></span>
 			<h1>まずは、画像から文章を取り出してみましょう！</h1>
 			<p class="description">アップロードした画像から文章を取り出して、問題を作成します。</p>
-			<form id="upload-form" class="upload-form" onsubmit="return uploadImage(event);">
-				<label for="image-upload" class="upload-label">画像をアップロード</label>
-				<div class="upload-area" id="upload-area">
-					<input type="file" id="image-upload" accept="image/*" capture="camera" hidden
-						onchange="handleFileSelect(event)">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-						stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="upload-icon">
-						<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-						<polyline points="17 8 12 3 7 8"></polyline>
-						<line x1="12" y1="3" x2="12" y2="15"></line>
-					</svg>
-					<p>クリックしてアップロード</p>
-				</div>
-
-				<div id="file-info" class="file-info hidden">
-					<span id="file-name"></span>
-					<button type="button" id="remove-file" class="remove-file">&times;</button>
-				</div>
-				<button type="submit" id="upload-button" class="upload-button" disabled>テキスト抽出</button>
+			<!-- エラーメッセージ -->
+			<div th:if="${errorMessage}">
+				<span style="color:red" th:text="${errorMessage}"></span>
+			</div>
+			<form id="upload-form" class="upload-form" method="POST" action="/ocr" enctype="multipart/form-data">
+    			<label for="image-upload" class="upload-label">画像をアップロード</label>
+    			<div class="upload-area" id="upload-area">
+        			<input type="file" id="image-upload" name="image" accept="image/png, image/jpeg" capture="camera" hidden onchange="handleFileSelect(event)">
+        			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="upload-icon">
+            			<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+           				<polyline points="17 8 12 3 7 8"></polyline>
+            			<line x1="12" y1="3" x2="12" y2="15"></line>
+        			</svg>
+        			<p>クリックしてアップロード</p>
+    			</div>
+    			<div id="file-info" class="file-info hidden">
+        			<span id="file-name"></span>
+        			<button type="button" id="remove-file" class="remove-file">&times;</button>
+    			</div>
+    			<button type="submit" id="upload-button" class="upload-button" disabled>テキスト抽出</button>
 			</form>
-
 		</main>
 	</div>
 

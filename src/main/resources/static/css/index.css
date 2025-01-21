@@ -184,6 +184,7 @@ h1 {
   display: none;
 }
 
+/* 共通スタイル */
 nav ul {
   display: flex;
   justify-content: flex-end;
@@ -191,81 +192,70 @@ nav ul {
   list-style: none;
 }
 
-/* ログインボタンとサインアップボタンのデザイン */
-.auth-button {
+/* ログインボタンのスタイル */
+form.login-button input[type="submit"] {
+  font: 16px Arial, sans-serif;
   font-weight: 600;
-  /* header-title と同じサイズ */
   padding: 12px 24px;
   border-radius: 30px;
-  /* より丸い形に */
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, border-color 0.3s;
   border: 2px solid transparent;
-  /* ボーダーを透明に設定して角を丸くする */
   text-decoration: none;
-}
-
-.auth-button:nth-child(1) {
-  background-color: white;
-  color: #1f2937;
-  /* テキストカラーをダークに */
-  border-color: #1f2937;
-  /* ボーダー色をログインボタンに合わせて */
-}
-
-.auth-button:nth-child(2) {
+  text-align: center;
   background-color: #333;
-  /* 黒色 */
   color: white;
   border-color: #333;
-  /* サインアップボタンのボーダーを黒く */
 }
 
-/* ログインボタンとサインアップボタンのホバー効果 */
-.auth-button:hover {
-  background-color: #f9fafb;
+form.login-button input[type="submit"]:hover {
+	background-color: #4a4a4a;
 }
 
-.auth-button:nth-child(1):hover {
-  background-color: #f9fafb;
-  /* ログインボタンのホバー時 */
-}
-
-.auth-button:nth-child(2):hover {
-  background-color: #4a4a4a;
-  /* サインアップボタンのホバー時 */
-}
-
-/* ログアウトボタンのデザイン */
-.logout-button {
+/* サインアップボタンのスタイル */
+form.signup-button input[type="submit"] {
+  font: 16px Arial, sans-serif;
   font-weight: 600;
-  /* header-title と同じサイズ */
   padding: 12px 24px;
   border-radius: 30px;
-  /* より丸い形に */
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, border-color 0.3s;
   border: 2px solid transparent;
-  /* ボーダーを透明に設定して角を丸くする */
+  text-decoration: none;
+  text-align: center;
+  background-color: #333;
+  color: white;
+  border-color: #333;
 }
 
-.logout-button {
+form.signup-button input[type="submit"]:hover {
+  background-color: #4a4a4a;
+}
+
+/* ログアウトボタンのスタイル */
+form.logout-button input[type="submit"] {
+  font: 16px Arial, sans-serif;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: background-color 0.3s, border-color 0.3s;
+  border: 2px solid transparent;
+  text-decoration: none;
+  text-align: center;
   background-color: white;
   color: #1f2937;
-  /* テキストカラーをダークに */
   border-color: #1f2937;
-  /* ログアウトボタンに合わせたボーダー色 */
 }
 
-/* ログアウトボタンのホバー効果 */
-.logout-button:hover {
+form.logout-button input[type="submit"]:hover {
   background-color: #f9fafb;
 }
 
 /* サイドバーのスタイル */
 #sidebar {
   position: fixed;
-  top: 80px;
+  top: 85px;
   /* ヘッダーの高さ分だけ下げる */
   left: -250px;
   width: 250px;

@@ -5,22 +5,17 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Sign up</title>
-	<link rel="stylesheet" href="css/signup.css">
+	<link rel="stylesheet" th:href="@{/css/signup.css}">
 </head>
 <body>
 	<div class="container">
 		<div class="signup-box">
 			<h1>アカウントの作成</h1>
 			<form th:action="@{/register/create}" th:object="${registerForm}" method="post">
-				
-				<!-- エラーメッセージの表示 -->
-				<div th:if="${emailError}">
-					<div class="alert alert-danger">
-						<i class="bi bi-exclamation-triangle-fill"></i>
-						<span th:text="${emailError}"></span>
-					</div>
-				</div>
-				
+				<!-- メールアドレスのエラーメッセージ -->
+				<div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="alert alert-danger"></div>
+				<!-- パスワードのエラーメッセージ -->
+				<div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="alert alert-danger"></div>		
 				<div class="input-group">
 					<input type="text" th:field="*{email}" id="email" required>
 					<label for="email">Email</label>
@@ -29,13 +24,9 @@
 				<div class="input-group">
 					<input type="password" th:field="*{password}" id="password" required>
 					<label for="password">Password</label>
-					<!-- パスワードのエラーメッセージ -->
-					<div th:if="${#fields.hasErrors('password')}" class="alert alert-danger">
-						<i class="bi bi-exclamation-triangle-fill"></i>
-						<span th:errors="*{password}"></span>
-					</div>
 				</div>
 				<button type="submit">Sign up</button>
+				
 			</form>
 		</div>
 		<p class="other-page">

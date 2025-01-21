@@ -55,7 +55,12 @@ function displayImagePreview(file) {
 // ファイル選択時の処理
 document.getElementById('image-upload').addEventListener('change', function (event) {
     const file = event.target.files[0];
-    if (!file) return;
+    if (file.size > 20 * 1024 * 1024) { // 20MB
+        alert('ファイルサイズが大きすぎます。20MB以下の画像を使用してください。');
+        event.target.value = ''; // ファイル選択をクリア
+        location.reload();
+        return;
+    }
 
     // プレビュー表示
     displayImagePreview(file);
@@ -102,38 +107,4 @@ function handleFileSelect(event) {
 }
 
 
-function uploadImage(event) {
-    event.preventDefault();  // フォーム送信を防ぐ
-
-    const fileInput = document.getElementById("image-upload");
-    const file = fileInput.files[0];
-    const reader = new FileReader();
-
-    reader.onloadend = function () {
-        // 画像をBase64エンコード
-        const base64Image = reader.result;
-
-        // サーバーにPOSTリクエストを送信
-        const formData = new FormData();
-        formData.append("image", base64Image);
-
-        fetch("/ocr", {
-            method: "POST",
-            body: formData,
-        })
-        .then(response => {
-            if (response.ok) {
-                // OCR処理が完了したら結果ページにリダイレクト
-                window.location.href = "/result";  // 結果ページにリダイレクト
-            } else {
-                alert("エラーが発生しました");
-            }
-        })
-        .catch(error => {
-            alert("エラーが発生しました");
-        });
-    };
-
-    reader.readAsDataURL(file);  // 画像ファイルをBase64エンコード
-}
 

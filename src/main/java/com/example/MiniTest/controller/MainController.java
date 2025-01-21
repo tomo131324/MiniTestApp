@@ -32,8 +32,10 @@ import org.apache.commons.codec.binary.Base64;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -71,37 +73,41 @@ public class MainController {
     
     // パスワードリセットページの表示
     @GetMapping("/password-reset")
-    public String showPasswordResetPage() {
+    public String showPasswordResetPage(Model model) {
+    	model.addAttribute("registerForm", new RegisterForm());
         return "password-reset"; // password-reset.html に遷移
     }
 
     // パスワードリセットの処理
     @PostMapping("/password-reset")
     public String resetPassword(@RequestParam("email") String email,
-            @RequestParam("newPassword") String newPassword,
+            @Valid @ModelAttribute("registerForm") RegisterForm registerForm, BindingResult result,
             Model model) {
+    	// パスワードチェック
+        if (result.hasErrors()) {
+            return "password-reset";
+        }
         // メールアドレスが登録されているかチェック
-        if (userService.changePassword(email, newPassword)) {
-            // パスワードが正常に変更されたことをユーザーに伝える
+        if (userService.changePassword(registerForm.getEmail(), registerForm.getPassword())) {
             model.addAttribute("message", "パスワードが変更されました。");
-            return "password-reset-success"; // 成功メッセージ画面
+            return "password-reset-success";
         } else {
-            // メールアドレスが見つからない場合
             model.addAttribute("error", "そのメールアドレスは登録されていません。");
-            return "password-reset"; // エラーメッセージを表示
+            return "password-reset";
         }
     }
 
     // 新規登録画面を表示
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
+    	// パスワードチェック
         model.addAttribute("registerForm", new RegisterForm());
         return "signup";
     }
 
     @PostMapping("/register/create")
     public String createUser(@Valid @ModelAttribute("registerForm") RegisterForm registerForm, BindingResult result,
-            Model model, HttpSession session, RedirectAttributes redirectAttributes, HttpServletRequest request) {
+            Model model, RedirectAttributes redirectAttributes, HttpServletRequest request) {
         if (result.hasErrors()) {
             return "signup";
         }
@@ -154,11 +160,23 @@ public class MainController {
     }
     
     @PostMapping("/ocr")
-    public String ocr(@RequestParam("image") String base64Image, HttpSession session) throws IOException {
-        if (base64Image != null && !base64Image.isEmpty()) {
-            // Base64データをデコード
-            byte[] imageBytes = Base64.decodeBase64(base64Image.split(",")[1]);
+    public String ocr(@RequestPart("image") MultipartFile image, RedirectAttributes redirectAttributes, Model model) throws IOException {
+    	try {       	
+        	// ファイル形式チェック
+            String contentType = image.getContentType();
+            if (!("image/png".equals(contentType) || "image/jpeg".equals(contentType) || "image/jpg".equals(contentType))) {
+                redirectAttributes.addFlashAttribute("errorMessage", "対応していない画像形式です。JPEGまたはPNG形式の画像を使用してください。");
+                return "redirect:/";
+            }
+        	
+        	byte[] imageBytes = image.getBytes();
 
+            // ファイルサイズチェック (20MB以上の場合エラー)
+            if (imageBytes.length > 20 * 1024 * 1024) {
+            	redirectAttributes.addFlashAttribute("errorMessage", "ファイルサイズが大きすぎます。20MB以下の画像を使用してください。");
+                return "redirect:/";
+            }
+            
             // 一時ファイルに保存
             String tempDir = System.getProperty("java.io.tmpdir");
             File tempFile = new File(tempDir, "user_image.png");
@@ -167,35 +185,52 @@ public class MainController {
             // OCR実行
             String text = apiservice.extractText(tempFile);
 
-            // セッションにOCR結果を保存
-            session.setAttribute("ocrResult", text);
-
-            // 結果画面に遷移
-            return "result";
-        }
-        return "error";
-    }
-
-    // 結果ページ
-    @GetMapping("/result") 
-    public String result(HttpSession session, Model model, SessionStatus sessionStatus) {
-        // セッションから値を取得
-        String text = (String) session.getAttribute("ocrResult");
-        if (text != null) {
-            model.addAttribute("text", text);
-        } else {
-            model.addAttribute("text", "");
+            // 禁止文字チェック
+            String[] forbiddenPatterns = {"<script>", "</script>"};
+            for (String pattern : forbiddenPatterns) {
+                if (text.contains(pattern)) {
+                    redirectAttributes.addFlashAttribute("errorMessage", "禁止された文字が含まれています。");
+                    return "redirect:/";
+                }
+            }
             
+            // テキストnullチェック
+            if (text == "") {
+            	redirectAttributes.addFlashAttribute("errorMessage", "アップロードされた画像にテキストが含まれていません。");
+            	return "redirect:/";
+            }
+            
+            model.addAttribute("text", text);            
+            return "result";
+            
+        } catch (IOException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "ファイルの読み込み中にエラーが発生しました。");
+            return "redirect:/";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "処理中にエラーが発生しました。");
+            return "redirect:/";
         }
-        
-        // セッションの値を使用した後にセッション破棄
-        sessionStatus.setComplete();
-        return "result";
     }
     
     //問題作成
     @PostMapping("/create")
     public String create(@RequestParam("number") int number, @RequestParam("form") String form, @RequestParam("textinput") String textinput, Model model){
+    	//　禁止文字チェック
+        String[] forbiddenPatterns = {"<script>", "</script>"};
+        for (String pattern : forbiddenPatterns) {
+        	if (textinput.contains(pattern)) {
+        		model.addAttribute("errorMessage", "禁止された文字が含まれています。");
+        		model.addAttribute("text", textinput);
+                return "result";
+            }
+        }
+        
+        // 文字数チェック
+        //if (textinput.length() > 2000) {
+        	//model.addAttribute("errorMessage", "文字数が多すぎます。2000文字以下で入力してください。");
+        	//model.addAttribute("text", textinput);
+        	//return "result";
+        //}
     	//ユーザーIDと最新テストID取得
     	Integer userId = userService.getCurrentUserId();
     	Integer latestTestId = questionService.getLatestTestId(userId);

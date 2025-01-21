@@ -57,6 +57,10 @@
             <form class="text-editor-form" action="/create" method="post">
                 <div class="text-editor">
                     <label for="extracted-text">抽出されたテキスト（編集可能）:</label>
+                    <!-- エラーメッセージ -->
+					<div th:if="${errorMessage}">
+						<span style="color:red" th:text="${errorMessage}"></span>
+					</div>
                     <textarea id="extracted-text" rows="20" th:text="${text}" name="textinput"></textarea>
                 </div>
                 <div class="options">
