@@ -2,6 +2,7 @@ package com.example.MiniTest.service;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -109,10 +110,16 @@ public class QuestionServiceImpl implements QuestionService{
             result.add(resultMap);
         }
         
-        // 結果リストを逆順にする
-        Collections.reverse(result);
-
-		} 
+        // testId を降順にソート
+        Collections.sort(result, new Comparator<Map<String, Object>>() {
+            @Override
+            public int compare(Map<String, Object> map1, Map<String, Object> map2) {
+                Integer testId1 = (Integer) map1.get("testId");
+                Integer testId2 = (Integer) map2.get("testId");
+                return testId2.compareTo(testId1); // 降順にソート
+            }
+        });
+    }
         return result;
     }
 }

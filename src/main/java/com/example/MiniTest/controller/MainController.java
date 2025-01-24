@@ -44,7 +44,6 @@ import org.springframework.validation.BindingResult;
 
 @Controller
 @RequestMapping("/")
-@SessionAttributes("ocrResult")  // セッションに保存する属性を指定
 public class MainController {
 
     @Autowired
@@ -56,12 +55,17 @@ public class MainController {
     @Autowired
     private QuestionService questionService;
 	
+    // サイドバーに問題追加
+    private void sidebar(Model model) {
+        Integer userId = userService.getCurrentUserId();
+        List<Map<String, Object>> getQuestions = questionService.getFirstQuestions(userId);
+        model.addAttribute("getQuestions", getQuestions);
+    }
+    
     // 初期画面
     @GetMapping
     public String showCameraPage(Model model) {
-    	Integer userId = userService.getCurrentUserId();
-    	List<Map<String, Object>> getQuestions = questionService.getFirstQuestions(userId);
-    	model.addAttribute("getQuestions", getQuestions);
+    	sidebar(model);
         return "index";
     }
 
@@ -83,18 +87,23 @@ public class MainController {
     public String resetPassword(@RequestParam("email") String email,
             @Valid @ModelAttribute("registerForm") RegisterForm registerForm, BindingResult result,
             Model model) {
-    	// パスワードチェック
-        if (result.hasErrors()) {
-            return "password-reset";
-        }
-        // メールアドレスが登録されているかチェック
-        if (userService.changePassword(registerForm.getEmail(), registerForm.getPassword())) {
-            model.addAttribute("message", "パスワードが変更されました。");
-            return "password-reset-success";
-        } else {
-            model.addAttribute("error", "そのメールアドレスは登録されていません。");
-            return "password-reset";
-        }
+    	try {
+    		// パスワードチェック
+    		if (result.hasErrors()) {
+    			return "password-reset";
+    		}
+    		// メールアドレスが登録されているかチェック
+    		if (userService.changePassword(registerForm.getEmail(), registerForm.getPassword())) {
+    			model.addAttribute("message", "パスワードが変更されました。");
+    			return "password-reset-success";
+    		} else {
+    			model.addAttribute("error", "そのメールアドレスは登録されていません。");
+    			return "password-reset";
+    		}
+    	} catch (Exception e){
+    		model.addAttribute("errorMessage", "パスワードリセットの処理中にエラーが起きました。");
+    		return "error";
+    	}
     }
 
     // 新規登録画面を表示
@@ -108,7 +117,9 @@ public class MainController {
     @PostMapping("/register/create")
     public String createUser(@Valid @ModelAttribute("registerForm") RegisterForm registerForm, BindingResult result,
             Model model, RedirectAttributes redirectAttributes, HttpServletRequest request) {
+    	try {
         if (result.hasErrors()) {
+        	model.addAttribute("registerForm", new RegisterForm());
             return "signup";
         }
 
@@ -135,6 +146,11 @@ public class MainController {
         }
 
         return "redirect:/";
+        
+    	} catch (Exception e) {
+    		model.addAttribute("errorMessage", "新規登録の処理中にエラーが起きました。");
+    		return "error";
+    	}
     }
    
     
@@ -156,7 +172,15 @@ public class MainController {
     	
     	model.addAttribute("questions",questions);
     	model.addAttribute("form", form);
+    	sidebar(model);
     	return "questions";
+    }
+    
+    // result表示
+    @GetMapping("/result")
+    public String showResult(Model model) {
+    	sidebar(model);
+    	return "result";
     }
     
     @PostMapping("/ocr")
@@ -200,116 +224,127 @@ public class MainController {
             	return "redirect:/";
             }
             
-            model.addAttribute("text", text);            
-            return "result";
+            redirectAttributes.addFlashAttribute("text", text);
+            return "redirect:/result";
             
         } catch (IOException e) {
             redirectAttributes.addFlashAttribute("errorMessage", "ファイルの読み込み中にエラーが発生しました。");
             return "redirect:/";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "処理中にエラーが発生しました。");
-            return "redirect:/";
+            model.addAttribute("errorMessage", "画像の解析中にエラーが発生しました。");
+            return "error";
         }
     }
     
     //問題作成
     @PostMapping("/create")
-    public String create(@RequestParam("number") int number, @RequestParam("form") String form, @RequestParam("textinput") String textinput, Model model){
-    	//　禁止文字チェック
-        String[] forbiddenPatterns = {"<script>", "</script>"};
-        for (String pattern : forbiddenPatterns) {
-        	if (textinput.contains(pattern)) {
-        		model.addAttribute("errorMessage", "禁止された文字が含まれています。");
-        		model.addAttribute("text", textinput);
-                return "result";
-            }
-        }
+    public String create(@RequestParam("number") int number, @RequestParam("form") String form, @RequestParam("textinput") String textinput,RedirectAttributes redirectAttributes, Model model){
+    	try {
+    		//　禁止文字チェック
+    		String[] forbiddenPatterns = {"<script>", "</script>"};
+    		for (String pattern : forbiddenPatterns) {
+    			if (textinput.contains(pattern)) {
+    				redirectAttributes.addFlashAttribute("errorMessage", "禁止された文字が含まれています。");
+    				redirectAttributes.addFlashAttribute("text", textinput);
+    				return "redirect:/result";
+    			}
+    		}
         
-        // 文字数チェック
-        //if (textinput.length() > 2000) {
-        	//model.addAttribute("errorMessage", "文字数が多すぎます。2000文字以下で入力してください。");
-        	//model.addAttribute("text", textinput);
-        	//return "result";
-        //}
-    	//ユーザーIDと最新テストID取得
-    	Integer userId = userService.getCurrentUserId();
-    	Integer latestTestId = questionService.getLatestTestId(userId);
+    		// 文字数チェック
+    		if (textinput.length() > 2000) {
+    			redirectAttributes.addFlashAttribute("errorMessage", "文字数が多すぎます。2000文字以下で入力してください。");
+    			redirectAttributes.addFlashAttribute("text", textinput);
+    			return "redirect:/result";
+    		}
+    		//ユーザーIDと最新テストID取得
+    		Integer userId = userService.getCurrentUserId();
+    		Integer latestTestId = questionService.getLatestTestId(userId);
     	
-        List<API> Questions = apiservice.createQuestion(textinput,number,form);
-        model.addAttribute("questions", Questions);
-        model.addAttribute("form", form);
-        //問題保存
-        saveService.addQuestion(Questions,userId,form,latestTestId);
+    		List<API> Questions = apiservice.createQuestion(textinput,number,form);
+    		model.addAttribute("questions", Questions);
+    		model.addAttribute("form", form);
+    		sidebar(model);
+    		//問題保存
+    		saveService.addQuestion(Questions,userId,form,latestTestId);
     	
-    	return "questions";
+    		return "questions";
+    	} catch (Exception e) {
+    		model.addAttribute("errorMessage", "問題作成の処理中にエラーが起きました。");
+    		return "error";
+    	}
     }
     
     
     //採点
     @PostMapping("/scoring")
     public String scoring(@RequestParam Map<String, String> answers, @RequestParam(name = "testId", required = false) Integer testId, @RequestParam("form") String form, Model model) {
-    	//ユーザーIDと最新テストID取得
-    	Integer userId = userService.getCurrentUserId();
-    	// Mapからリストに変換
-        List<Object> userAnswer = new ArrayList<>();
+    	try {
+    		//ユーザーIDと最新テストID取得
+    		Integer userId = userService.getCurrentUserId();
+    		// Mapからリストに変換
+    		List<Object> userAnswer = new ArrayList<>();
 
-        for (Map.Entry<String, String> entry : answers.entrySet()) {
-            String key = entry.getKey(); //answersのキー取得
-            String value = entry.getValue(); //answersのvalue取得
+    		for (Map.Entry<String, String> entry : answers.entrySet()) {
+    			String key = entry.getKey(); //answersのキー取得
+    			String value = entry.getValue(); //answersのvalue取得
 
-            // 穴埋め問題の処理（キー形式: answers[数字][数字]）
-            if (key.matches("answers\\[\\d+]\\[\\d+]")) {
+    			// 穴埋め問題の処理（キー形式: answers[数字][数字]）
+    			if (key.matches("answers\\[\\d+]\\[\\d+]")) {
                 
-                int mainIndex = Integer.parseInt(key.substring(key.indexOf('[') + 1, key.indexOf(']')));
-                int subIndex = Integer.parseInt(key.substring(key.lastIndexOf('[') + 1, key.lastIndexOf(']')));
+    				int mainIndex = Integer.parseInt(key.substring(key.indexOf('[') + 1, key.indexOf(']')));
+    				int subIndex = Integer.parseInt(key.substring(key.lastIndexOf('[') + 1, key.lastIndexOf(']')));
 
-                // 必要に応じてリストを拡張
-                while (userAnswer.size() <= mainIndex) {
-                    userAnswer.add(new ArrayList<String>());
-                }
+    				// 必要に応じてリストを拡張
+    				while (userAnswer.size() <= mainIndex) {
+    					userAnswer.add(new ArrayList<String>());
+    				}
 
-                // リストを取得して値を設定
-                List<String> subList = (List<String>) userAnswer.get(mainIndex);
-                while (subList.size() <= subIndex) {
-                    subList.add(null);
-                }
-                subList.set(subIndex, value);
+    				// リストを取得して値を設定
+    				List<String> subList = (List<String>) userAnswer.get(mainIndex);
+    				while (subList.size() <= subIndex) {
+    					subList.add(null);
+    				}
+    				subList.set(subIndex, value);
 
-             // 記述問題または4択問題の処理（キー形式: answers[数字]）
-            } else if (key.matches("answers\\[\\d+]")) {
+    				// 記述問題または4択問題の処理（キー形式: answers[数字]）
+    			} else if (key.matches("answers\\[\\d+]")) {
                 
-                int index = Integer.parseInt(key.substring(key.indexOf('[') + 1, key.indexOf(']')));
+    				int index = Integer.parseInt(key.substring(key.indexOf('[') + 1, key.indexOf(']')));
 
-                // 必要に応じてリストを拡張
-                while (userAnswer.size() <= index) {
-                    userAnswer.add(null);
-                }
+    				// 必要に応じてリストを拡張
+    				while (userAnswer.size() <= index) {
+    					userAnswer.add(null);
+    				}
 
-                // 値を設定
-                userAnswer.set(index, value);
-            }
-        }
+    				// 値を設定
+    				userAnswer.set(index, value);
+    			}
+    		}
         
-    	//testIdがnullの場合は、最新のテストIDを取得
-    	if (testId == null) {
-    		testId = questionService.getLatestTestId(userId);
-    	}
+    		//testIdがnullの場合は、最新のテストIDを取得
+    		if (testId == null) {
+    			testId = questionService.getLatestTestId(userId);
+    		}
     	
-    	//正誤取得
-        if ("4択問題".equals(form)) { 
-        	List<Boolean> correction = questionService.scoring(userAnswer,testId,userId);
-        	model.addAttribute("correction", correction);
-        }
+    		//正誤取得
+    		if ("4択問題".equals(form)) { 
+    			List<Boolean> correction = questionService.scoring(userAnswer,testId,userId);
+    			model.addAttribute("correction", correction);
+    		}
         
-    	model.addAttribute("questions", questionService.getQuestions(userId, testId));
-    	model.addAttribute("form", form);
-    	model.addAttribute("userAnswer", userAnswer);
+    		model.addAttribute("questions", questionService.getQuestions(userId, testId));
+    		model.addAttribute("form", form);
+    		model.addAttribute("userAnswer", userAnswer);
+    		sidebar(model);
 
-    	return "scoring";
+    		return "scoring";
+
+    	} catch (Exception e) {
+    		model.addAttribute("errorMessage", "採点の処理中にエラーが起きました。");
+    		return "error";
+    	}
     }
-    
 }
-
 
 
 

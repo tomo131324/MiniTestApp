@@ -5,6 +5,10 @@
     --text-color: #ffffff;
     --border-color: #e5e7eb;
     --hover-color: #d1d5db;
+    --button-color: #3b82f6;
+    --button-hover-color: #2563eb;
+    --secondary-button-color: #6b7280;
+    --secondary-button-hover-color: #4b5563;
 }
 
 * {
@@ -13,10 +17,18 @@
     box-sizing: border-box;
 }
 
-h1 {
-  font-size: 2rem;
-  margin-bottom: 1rem;
-  margin-top: 5rem;
+body {
+    font-family: Arial, sans-serif;
+    background-color: #1a1a1a;
+    color: #FFFFFF;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 /* header */
@@ -39,27 +51,28 @@ header {
 
 
 .logo {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 
 .header-title {
-  font-weight: 600;
+    font-weight: 600;
+    text-decoration: none;
+    color: inherit;
 }
 
-
-.main-title {
-  font-size: 24px;
-  margin-bottom: 30px;
+.header-title:hover {
+    color: var(--hover-color);
 }
 
+/* 共通スタイル */
 nav ul {
   display: flex;
+  justify-content: flex-end;
   gap: 1rem;
-  list-style-type: none;
-  /*justify-content: flex-end; */
+  list-style: none;
 }
 
 /* ログアウトボタン基本スタイル */
@@ -85,7 +98,6 @@ form.logout-button input[type="submit"] {
 form.logout-button input[type="submit"]:hover {
   background-color: #cccccc;
 }
-
 /* サイドバーのスタイル */
 #sidebar {
   position: fixed;
@@ -219,142 +231,147 @@ form.logout-button input[type="submit"]:hover {
   cursor: pointer;
 }
 
-
 /* main */
-body {
-    font-family: Arial, sans-serif;
-    background-color: #1a1a1a;
-    color: #FFFFFF;
-    margin: 0;
-    padding: 0;
-}
-
-.container {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
-
-.header-title {
-  font-weight: 600;
-  text-decoration: none;
-  color: inherit;
-}
-
-.header-title:hover {
-  color: var(--hover-color);
-}
-
 main {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-	justify-content: center;
+    justify-content: center;
     padding: 2rem;
-	text-align: center;
 }
 
-.text-editor {
+h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  margin-top: 5rem;
+}
+
+.question-container {
+    background-color: var(--box-bg-color);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
     width: 100%;
     max-width: 800px;
-    margin-bottom: 1.5rem;
 }
 
-.text-editor label {
-    display: block;
+.question h2 {
+    font-size: 1.25rem;
     margin-bottom: 1rem;
 }
 
-.text-editor textarea {
-    width: 100%;
-    padding: 0.5rem;
-    margin-top: 1rem;
-    border: 1px solid var(--border-color);
-    border-radius: 0.25rem;
-    background-color: var(--box-bg-color);
-    color: var(--text-color);
-    font-size: 1rem;
-    resize: vertical;
-}
 
 .options {
-    width: 100%;
-    max-width: 800px;
-    margin-bottom: 1.5rem;
-}
-
-.option-group {
     display: flex;
     flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    /*background-color: rgba(255, 255, 255, 0.1); */
+}
+
+.options label {
+    display: flex;
+    align-items: center;
     gap: 0.5rem;
-    margin-top: 1rem;
+    cursor: pointer;
 }
 
-.option-group label {
-    font-weight: bold;
+.options input[type="radio"] {
+    appearance: none;
+    width: 1rem; /* ラジオボタンの横幅 */
+    height: 1rem; /* ラジオボタンの高さ */
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    outline: none;
+    cursor: pointer;
+    flex-shrink: 0; /* テキストが長くてもボタンサイズを固定 */
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 1.5rem; /* ラジオボタンの中央揃えを維持 */
 }
 
-.option-group select {
+.options input[type="radio"]:checked {
+    background-color: var(--button-color);
+}
+
+.options label span {
+    display: inline-block; /* テキストの改行を自然に処理 */
+    max-width: calc(100% - 2rem); /* 必要に応じてテキスト幅を調整 */
+}
+
+.text-input {
+    width: 100%;
     padding: 0.5rem;
+    background-color: var(--bg-color);
     border: 1px solid var(--border-color);
     border-radius: 0.25rem;
-    background-color: var(--box-bg-color);
     color: var(--text-color);
-    font-size: 1rem;
+    margin-top: 0.5rem;
 }
 
-.generate-button {
-    display: block;
+.button-container {
+    display: flex;
+    justify-content: space-between;
     width: 100%;
-    padding: 0.75rem;
-    margin-top: 1rem;
-    
-    background-color: #2563eb;
-    color: white;
+    max-width: 800px;
+    margin-top: 1.5rem;
+}
+
+.primary-button,
+.secondary-button {
+    padding: 0.75rem 1.5rem;
     border: none;
     border-radius: 0.25rem;
     font-size: 1rem;
     cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    justify-content: center;
 }
 
-.generate-button:hover {
-   background-color: #1d4ed8;
+.primary-button {
+    background-color: var(--button-color);
+    color: white;
+}
+
+.primary-button:hover {
+    background-color: var(--button-hover-color);
+}
+
+.secondary-button {
+    background-color: var(--secondary-button-color);
+    color: white;
+}
+
+.secondary-button:hover {
+    background-color: var(--secondary-button-hover-color);
 }
 
 @media (max-width: 768px) {
-    .options {
-        flex-direction: column;
-        gap: 1rem;
+    .question-container {
+        padding: 1rem;
     }
 
     h1 {
         font-size: 1.5rem;
     }
+
+    .button-container {
+        flex-direction: column;
+        gap: 1rem;
+    }
 }
 
-form {
-    width: 100%;
-    max-width: 800px;
-
+.question p {
+    line-height: 1.8; /* 行間を広げる */
+    font-weight: bold; /* 太字 */
+    color: var(--text-color); /* テキスト色を維持 */
+    margin-bottom: 20px;
 }
 
-.text-editor-form {
-    background-color: #2A2B32;
-    padding: 2rem;
-    border-radius: 0.5rem;
-    max-width: 800px;
-    max-height: 800px;
-    width: 100%;
-}
-
-.alert-danger {
-    color: #ff4d4d; /* エラーメッセージ用の赤色 */
-    background-color: rgba(255, 77, 77, 0.1); /* 背景色を薄くして視認性を向上 */
-    border: 1px solid #ff4d4d;
-    border-radius: 5px;
-    padding: 10px;
-    margin-bottom: 20px; /* フォームとの間に余白を追加 */
-    font-size: 14px;
-    text-align: center
+input[type="text"] {
+    margin-top: 0.5rem; /* input要素の上に余白を追加 */
 }

@@ -15,7 +15,14 @@
 				<!-- メールアドレスのエラーメッセージ -->
 				<div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="alert alert-danger"></div>
 				<!-- パスワードのエラーメッセージ -->
-				<div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="alert alert-danger"></div>		
+				<div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="alert alert-danger"></div>
+				<!-- 登録済みエラーメッセージの表示 -->
+				<div th:if="${emailError}">
+					<div class="alert alert-danger">
+						<i class="bi bi-exclamation-triangle-fill"></i>
+						<span th:text="${emailError}"></span>
+					</div>
+				</div>	
 				<div class="input-group">
 					<input type="text" th:field="*{email}" id="email" required>
 					<label for="email">Email</label>
