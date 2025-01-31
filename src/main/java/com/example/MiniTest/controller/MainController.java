@@ -118,16 +118,15 @@ public class MainController {
     public String createUser(@Valid @ModelAttribute("registerForm") RegisterForm registerForm, BindingResult result,
             Model model, RedirectAttributes redirectAttributes, HttpServletRequest request) {
     	try {
-        if (result.hasErrors()) {
-        	model.addAttribute("registerForm", new RegisterForm());
-            return "signup";
-        }
-
-        // メールアドレスの重複チェック
-        if (userService.emailExists(registerForm.getEmail())) {
-            redirectAttributes.addFlashAttribute("emailError", "このメールアドレスは既に登録されています。");
-            return "redirect:/register";
-        }
+    		// メールアドレスの重複チェック
+            if (userService.emailExists(registerForm.getEmail())) {
+                redirectAttributes.addFlashAttribute("emailError", "このメールアドレスは既に登録されています。");
+                return "redirect:/register";
+            }	
+    		
+            if (result.hasErrors()) {
+            	return "signup";
+            }
 
         User user = new User();
         user.setEmail(registerForm.getEmail());
@@ -251,8 +250,8 @@ public class MainController {
     		}
         
     		// 文字数チェック
-    		if (textinput.length() > 2000) {
-    			redirectAttributes.addFlashAttribute("errorMessage", "文字数が多すぎます。2000文字以下で入力してください。");
+    		if (textinput.length() > 10000) {
+    			redirectAttributes.addFlashAttribute("errorMessage", "文字数が多すぎます。10000文字以下で入力してください。");
     			redirectAttributes.addFlashAttribute("text", textinput);
     			return "redirect:/result";
     		}

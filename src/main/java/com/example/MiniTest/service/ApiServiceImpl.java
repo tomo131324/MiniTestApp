@@ -80,6 +80,70 @@ public class ApiServiceImpl implements ApiService {
 	        String endpoint = "https://api.openai.com/v1/chat/completions";
 
 	        // リクエストペイロードの作成
+	        /*
+	        JsonObject systemMessage = new JsonObject();
+	        systemMessage.addProperty("role", "system");
+	        systemMessage.addProperty("content", "You are an AI that creates questions. Output the result in JSON format.");
+
+	        JsonObject userMessage = new JsonObject();
+	        userMessage.addProperty("role", "user");
+
+	        switch (form) {
+	            case "記述問題":
+	                userMessage.addProperty("content",
+	                    "Based on the following text, create " + number + " descriptive questions. Output the results in JSON format as shown below.\n\n" +
+	                    "{\n" +
+	                    "  \"questions\": [\n" +
+	                    "    {\n" +
+	                    "      \"Question\": \"Question text\",\n" +
+	                    "      \"Answer\": \"Answer text\"\n" +
+	                    "    }\n" +
+	                    "  ]\n" +
+	                    "}\n\n" +
+	                    "Please use the following text:\n==\n" + textinput
+	                );
+	                break;
+	            case "4択問題":
+	                userMessage.addProperty("content",
+	                    "Based on the following text, create " + number + " multiple-choice questions (4 choices each). Output the results in JSON format as shown below.\n\n" +
+	                    "{\n" +
+	                    "  \"questions\": [\n" +
+	                    "    {\n" +
+	                    "      \"Question\": \"Question text\",\n" +
+	                    "      \"Answer\": \"Correct answer\",\n" +
+	                    "      \"Choices\": [\"Choice 1\", \"Choice 2\", \"Choice 3\", \"Choice 4\"]\n" +
+	                    "    }\n" +
+	                    "  ]\n" +
+	                    "}\n\n" +
+	                    "Please use the following text:\n==\n" + textinput
+	                );
+	                break;
+	            case "穴埋め問題":
+	                userMessage.addProperty("content",
+	                    "Based on the following text, create " + number + " fill-in-the-blank questions following the specified format. Output the results in JSON format as shown below.\n\n" +
+	                    "{\n" +
+	                    "  \"questions\": [\n" +
+	                    "    {\n" +
+	                    "      \"Question\": \"Question text (e.g., Software quality evaluation includes ( ① ) and ( ② ).)\",\n" +
+	                    "      \"Answers\": [\"Correct answer 1\", \"Correct answer 2\"]\n" +
+	                    "    }\n" +
+	                    "  ]\n" +
+	                    "}\n\n" +
+	                    "Conditions for creating the questions:\n" +
+	                    "1. Each question must contain at least 2 and at most 3 blanks.\n" +
+	                    "2. Example question format:\n" +
+	                    "【Question】Software Quality Evaluation\n" +
+	                    "Software quality evaluation includes two key concepts.\n" +
+	                    "For example, in the detailed design process, ( ① ) checks whether the detailed design results comply with the basic design documents and development standards used as input for detailed design. Meanwhile, ( ② ) confirms whether the implemented software meets user needs as described in the detailed design results.\n" +
+	                    "【Question】Management of Operation and Maintenance\n" +
+	                    "When a software defect occurs, the process of removing its cause to prevent recurrence is called ( ① ) action. The process of removing its cause to prevent similar issues that have not yet occurred is called ( ② ) action.\n" +
+	                    "3. Use the input text as the basis, but adjust the sentence structure appropriately to create fill-in-the-blank questions.\n\n" +
+	                    "Please use the following text:\n==\n" + textinput
+	                );
+	                break;
+	        }
+	        */
+
 	        JsonObject systemMessage = new JsonObject();
 	        systemMessage.addProperty("role", "system");
 	        systemMessage.addProperty("content", "あなたは問題を作るAIです。JSONで結果を出力します。");
