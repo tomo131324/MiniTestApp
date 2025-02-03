@@ -62,6 +62,11 @@ public class MainController {
         model.addAttribute("getQuestions", getQuestions);
     }
     
+    @RequestMapping("favicon.ico")
+    public void returnNoFavicon() {
+    }
+
+    
     // 初期画面
     @GetMapping
     public String showCameraPage(Model model) {
