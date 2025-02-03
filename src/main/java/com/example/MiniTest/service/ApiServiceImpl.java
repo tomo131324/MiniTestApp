@@ -10,8 +10,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.json.JSONObject;
+import org.json.JSONArray;
 
 import com.example.MiniTest.entity.API;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -27,10 +30,14 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.protobuf.ByteString;
 
+import com.example.MiniTest.entity.Question;
 
 @Service
 @Transactional
 public class ApiServiceImpl implements ApiService {
+	
+	@Autowired
+    private QuestionService questionService;
 	
     // OCR処理を行い、抽出テキストを返すメソッド
 	@Override
@@ -80,70 +87,6 @@ public class ApiServiceImpl implements ApiService {
 	        String endpoint = "https://api.openai.com/v1/chat/completions";
 
 	        // リクエストペイロードの作成
-	        /*
-	        JsonObject systemMessage = new JsonObject();
-	        systemMessage.addProperty("role", "system");
-	        systemMessage.addProperty("content", "You are an AI that creates questions. Output the result in JSON format.");
-
-	        JsonObject userMessage = new JsonObject();
-	        userMessage.addProperty("role", "user");
-
-	        switch (form) {
-	            case "記述問題":
-	                userMessage.addProperty("content",
-	                    "Based on the following text, create " + number + " descriptive questions. Output the results in JSON format as shown below.\n\n" +
-	                    "{\n" +
-	                    "  \"questions\": [\n" +
-	                    "    {\n" +
-	                    "      \"Question\": \"Question text\",\n" +
-	                    "      \"Answer\": \"Answer text\"\n" +
-	                    "    }\n" +
-	                    "  ]\n" +
-	                    "}\n\n" +
-	                    "Please use the following text:\n==\n" + textinput
-	                );
-	                break;
-	            case "4択問題":
-	                userMessage.addProperty("content",
-	                    "Based on the following text, create " + number + " multiple-choice questions (4 choices each). Output the results in JSON format as shown below.\n\n" +
-	                    "{\n" +
-	                    "  \"questions\": [\n" +
-	                    "    {\n" +
-	                    "      \"Question\": \"Question text\",\n" +
-	                    "      \"Answer\": \"Correct answer\",\n" +
-	                    "      \"Choices\": [\"Choice 1\", \"Choice 2\", \"Choice 3\", \"Choice 4\"]\n" +
-	                    "    }\n" +
-	                    "  ]\n" +
-	                    "}\n\n" +
-	                    "Please use the following text:\n==\n" + textinput
-	                );
-	                break;
-	            case "穴埋め問題":
-	                userMessage.addProperty("content",
-	                    "Based on the following text, create " + number + " fill-in-the-blank questions following the specified format. Output the results in JSON format as shown below.\n\n" +
-	                    "{\n" +
-	                    "  \"questions\": [\n" +
-	                    "    {\n" +
-	                    "      \"Question\": \"Question text (e.g., Software quality evaluation includes ( ① ) and ( ② ).)\",\n" +
-	                    "      \"Answers\": [\"Correct answer 1\", \"Correct answer 2\"]\n" +
-	                    "    }\n" +
-	                    "  ]\n" +
-	                    "}\n\n" +
-	                    "Conditions for creating the questions:\n" +
-	                    "1. Each question must contain at least 2 and at most 3 blanks.\n" +
-	                    "2. Example question format:\n" +
-	                    "【Question】Software Quality Evaluation\n" +
-	                    "Software quality evaluation includes two key concepts.\n" +
-	                    "For example, in the detailed design process, ( ① ) checks whether the detailed design results comply with the basic design documents and development standards used as input for detailed design. Meanwhile, ( ② ) confirms whether the implemented software meets user needs as described in the detailed design results.\n" +
-	                    "【Question】Management of Operation and Maintenance\n" +
-	                    "When a software defect occurs, the process of removing its cause to prevent recurrence is called ( ① ) action. The process of removing its cause to prevent similar issues that have not yet occurred is called ( ② ) action.\n" +
-	                    "3. Use the input text as the basis, but adjust the sentence structure appropriately to create fill-in-the-blank questions.\n\n" +
-	                    "Please use the following text:\n==\n" + textinput
-	                );
-	                break;
-	        }
-	        */
-
 	        JsonObject systemMessage = new JsonObject();
 	        systemMessage.addProperty("role", "system");
 	        systemMessage.addProperty("content", "あなたは問題を作るAIです。JSONで結果を出力します。");
@@ -263,5 +206,134 @@ public class ApiServiceImpl implements ApiService {
 	        throw new RuntimeException("エラーが発生しました: " + e.getMessage(), e);
 	    }
 	}
+	
+	//OpenAIを使い問題を採点するメソッド
+	@Override
+	public List<List<Boolean>> scoring(List<String> questionTexts, List<Object> userAnswers, List<List<String>> correctionAnswers, List<String> correctionAnswer, String form, Integer testId, Integer userId) {
+	    List<List<Boolean>> correctionList = new ArrayList<>();
+	    
+	    try {
+	        String apiKey = System.getenv("OPENAI_API_KEY");
+	        if (apiKey == null || apiKey.isEmpty()) {
+	            throw new IllegalStateException("APIキーが設定されていません。環境変数 'OPENAI_API_KEY' を設定してください。");
+	        }
+
+	        String endpoint = "https://api.openai.com/v1/chat/completions";
+
+	        // OpenAIへのリクエストを作成
+	        JsonObject systemMessage = new JsonObject();
+	        systemMessage.addProperty("role", "system");
+	        systemMessage.addProperty("content", "あなたは試験の採点官です。JSONで結果を出力します。");
+
+	        JsonObject userMessage = new JsonObject();
+	        JSONObject textJson = new JSONObject().put("問題文", new JSONArray(questionTexts));
+	        JSONObject userJson = new JSONObject().put("ユーザーの解答", new JSONArray(userAnswers));
+	        
+	        if ("穴埋め問題".equals(form)) {
+	        	JSONObject correctJson = new JSONObject().put("正解", new JSONArray(correctionAnswers));
+	        	String prompt = String.format(
+	        			"次の穴埋め問題の採点を行ってください。\n\n" +
+	        			"【採点基準】\n" +
+	        			"1. 正解と完全一致、正解と意味が同じものの場合のみ正解とする。\n" +
+	        			"2. 大文字・小文字の違いは無視する。\n" +
+	        			"3. 誤字脱字、余計な単語が含まれている場合は不正解。\n" +
+	        			"【問題文】\n%s\n\n" +
+	        			"【正解】\n%s\n\n" +
+	        			"【ユーザーの解答】\n%s\n\n" +
+	        			"### 出力フォーマット（厳守）：\n" +
+	        			"{ \"correction\": [[true, false], [true, true]] }\n" +
+	        			"出力はJSONのみで、余計な説明は不要です。",
+	        			textJson.toString(), correctJson.toString(), userJson.toString()
+	        	);
+		        userMessage.addProperty("role", "user");
+		        userMessage.addProperty("content", prompt);
+		        
+	        } else if ("記述問題".equals(form)) {
+	        	JSONObject correctJson = new JSONObject().put("正解", new JSONArray(correctionAnswer));
+		        String prompt = String.format(
+		        		"以下の記述問題の採点を行ってください。\n\n" +
+		        		"【採点基準】\n" +
+		        		"1. 完全一致の場合は`true`。\n" +
+		        		"2. 重要な部分が正しければ部分的に正しいとして`[true, false]`とする。\n" +
+		        		"3. 全く一致しない場合は`[false, false]`。\n" +
+		        	    "4. 同義語や表現の違いがあっても意味が同じ場合は`true`。\n" +
+		        	    "5. 誤字脱字があっても意味が正確であれば`true`。\n" +
+		        	    "6. 余計な情報が含まれている場合は`false`。\n\n" +
+		        		"【問題文】\n%s\n\n" +
+		        		"【正解】\n%s\n\n" +
+		        		"【ユーザーの解答】\n%s\n\n" +
+		        		"### 【出力フォーマット】(厳守):\n" +
+		        		"{ \\\"correction\\\": [[true, false], [true, true], [false, false]] }\n" +
+		        		"出力はJSONのみで、余計な説明は不要です。",
+		        		textJson.toString(), correctJson.toString(), userJson.toString()
+		        			);
+
+		        userMessage.addProperty("role", "user");
+		        userMessage.addProperty("content", prompt);
+	        }
+
+
+	        JsonArray messages = new JsonArray();
+	        messages.add(systemMessage);
+	        messages.add(userMessage);
+
+	        JsonObject payload = new JsonObject();
+	        payload.addProperty("model", "gpt-4");
+	        payload.add("messages", messages);
+
+	        URL url = new URL(endpoint);
+	        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+	        connection.setRequestMethod("POST");
+	        connection.setRequestProperty("Authorization", "Bearer " + apiKey);
+	        connection.setRequestProperty("Content-Type", "application/json");
+	        connection.setDoOutput(true);
+
+	        try (OutputStream os = connection.getOutputStream()) {
+	            byte[] input = payload.toString().getBytes(StandardCharsets.UTF_8);
+	            os.write(input, 0, input.length);
+	        }
+
+	        // レスポンスを取得
+	        int responseCode = connection.getResponseCode();
+	        if (responseCode == 200) {
+	            String jsonResponse = new String(connection.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+
+	            // JSONを解析して `correction` を取得
+	            JsonObject jsonObject = JsonParser.parseString(jsonResponse).getAsJsonObject();
+	            String content = jsonObject
+	                .getAsJsonArray("choices")
+	                .get(0)
+	                .getAsJsonObject()
+	                .get("message")
+	                .getAsJsonObject()
+	                .get("content")
+	                .getAsString();
+
+	            // OpenAIのレスポンスから `correction` を取得
+	            ObjectMapper objectMapper = new ObjectMapper();
+	            JsonNode rootNode = objectMapper.readTree(content);
+	            JsonNode correctionNode = rootNode.get("correction");
+
+	            if (correctionNode != null && correctionNode.isArray()) {
+	                for (JsonNode innerArray : correctionNode) {
+	                    List<Boolean> innerList = new ArrayList<>();
+	                    for (JsonNode value : innerArray) {
+	                        innerList.add(value.asBoolean());
+	                    }
+	                    correctionList.add(innerList);
+	                }
+	            }
+	        } else {
+	            String errorResponse = new String(connection.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
+	            throw new IOException("APIからエラーが返されました: " + responseCode + " - " + errorResponse);
+	        }
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        throw new RuntimeException("エラーが発生しました: " + e.getMessage(), e);
+	    }
+
+	    return correctionList;
+	}
+
 	
 }

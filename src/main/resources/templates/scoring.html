@@ -77,10 +77,14 @@
                     <div th:if="${form} == '記述問題'">
                         <div class="question-header">
                             <span class="question-number">問題 <span th:text="${qStat.index + 1}"></span></span>
+                        	<span class="result-indicator"
+    							th:classappend="${#lists.contains(correction[qStat.index], false) ? (#lists.contains(correction[qStat.index], true) ? 'partial-correct-indicator' : 'incorrect-indicator') : 'correct-indicator'}"
+    							th:text="${#lists.contains(correction[qStat.index], false) ? (#lists.contains(correction[qStat.index], true) ? '△ もう少し' : '✘ 不正解') : '〇 正解'}">
+                            </span>
                         </div>
                         <p th:text="${question.question}"></p>
                         <div class="description-section">
-                            <div class="description-userAnswer">
+                            <div class="description-userAnswer" th:classappend="${#lists.contains(correction[qStat.index], false) ? (#lists.contains(correction[qStat.index], true) ? 'partial option' : 'incorrect option') : 'correct option'}">
                                 <span class="answer-label">あなたの回答</span>
                                 <span th:text="${userAnswer[qStat.index]}"></span><br />
                             </div>
@@ -94,14 +98,20 @@
                     <div th:if="${form} == '穴埋め問題'">
                         <div class="question-header">
                             <span class="question-number">問題 <span th:text="${qStat.index + 1}"></span></span>
-                        </div>
+                        	<span class="result-indicator"
+    							th:classappend="${#lists.contains(correction[qStat.index], false) ? (#lists.contains(correction[qStat.index], true) ? 'partial-correct-indicator' : 'incorrect-indicator') : 'correct-indicator'}"
+    							th:text="${#lists.contains(correction[qStat.index], false) ? (#lists.contains(correction[qStat.index], true) ? '△ もう少し' : '✘ 不正解') : '〇 正解'}">
+                            </span>
+                        </div>    
                         <p th:text="${question.question}"></p>
 
                         <div th:each="answer, answerStat : ${question.answers}">
                             <div class="hall-section">
-                                <div class="hall-userAnswer">
+                                <div class="hall-userAnswer" th:classappend="${correction[qStat.index][answerStat.index] ? 'correct option' : 'incorrect option'}">
                                     <span class="answer-label" th:text="${answerStat.index + 1} +' のあなたの解答'"></span>
-                                    <span th:text="${userAnswer[qStat.index][answerStat.index]}"></span><br />
+                                    <div th:if="${userAnswer[qStat.index].size() > answerStat.index}">
+    									<span th:text="${userAnswer[qStat.index][answerStat.index]}"></span><br />
+									</div>
                                 </div>
 
                                 <div class="hall-correctAnswer">

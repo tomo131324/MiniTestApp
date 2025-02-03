@@ -329,6 +329,21 @@ public class MainController {
     		if ("4択問題".equals(form)) { 
     			List<Boolean> correction = questionService.scoring(userAnswer,testId,userId);
     			model.addAttribute("correction", correction);
+    		} else {
+    			Iterable<Question> questions = questionService.getQuestions(userId,testId);
+    			List<List<String>> correctionAnswers = new ArrayList<>();
+    			List<String>correctionAnswer = new ArrayList<String>();
+    			List<String> questionTexts = new ArrayList<String>();
+    			String questionText;
+    		    for (Question question : questions) {
+    		    	questionText = question.getQuestion();
+    		    	questionTexts.add(questionText);
+    		    	correctionAnswers.add(question.getAnswers());
+    		    	correctionAnswer.add(question.getAnswer());
+    		    	}
+    		    List<List<Boolean>> correction = apiservice.scoring(questionTexts,userAnswer,correctionAnswers,correctionAnswer,form,testId,userId);
+    		    System.out.println(correction);
+    			model.addAttribute("correction", correction);
     		}
         
     		model.addAttribute("questions", questionService.getQuestions(userId, testId));

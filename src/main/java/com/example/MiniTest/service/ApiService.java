@@ -12,6 +12,7 @@ public interface ApiService {
 	
 	List<API> createQuestion(String textinput, int number, String form);
 
+	List<List<Boolean>> scoring(List<String> questionTexts, List<Object> userAnswers, List<List<String>> correctionAnswers,  List<String> correctionAnswer, String form, Integer testId, Integer userId);
 	
 }
 
