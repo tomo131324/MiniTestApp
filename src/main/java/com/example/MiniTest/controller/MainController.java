@@ -61,12 +61,7 @@ public class MainController {
         List<Map<String, Object>> getQuestions = questionService.getFirstQuestions(userId);
         model.addAttribute("getQuestions", getQuestions);
     }
-    
-    @RequestMapping("favicon.ico")
-    public void returnNoFavicon() {
-    }
-
-    
+        
     // 初期画面
     @GetMapping
     public String showCameraPage(Model model) {
